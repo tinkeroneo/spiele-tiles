@@ -35,7 +35,7 @@ pad.addEventListener("click", () => {
 
   if (!waiting) {
     // clicked too early
-    result.textContent = "Zu fr?h!";
+    result.textContent = "Zu früh!";
     reset();
     return;
   }

@@ -179,7 +179,7 @@ function roundMath() {
 
   const btn = document.createElement("button");
   btn.className = "primary";
-  btn.textContent = "Pr?fen";
+  btn.textContent = "Prüfen";
   btn.addEventListener("click", () => {
     const value = Number(input.value);
     endRound(value === result);
@@ -208,7 +208,7 @@ function roundMemory() {
 
     const btn = document.createElement("button");
     btn.className = "primary";
-    btn.textContent = "Pr?fen";
+    btn.textContent = "Prüfen";
     btn.addEventListener("click", () => {
       endRound(input.value.trim() === state.memorySequence);
     });
@@ -311,7 +311,7 @@ function updateHistoryUI(exerciseId) {
   historyList.innerHTML = "";
   const items = state.history[exerciseId] || [];
   if (!items.length) {
-    historyList.innerHTML = "<div class=\"history-item\"><span>Noch keine Eintr?ge.</span></div>";
+    historyList.innerHTML = "<div class=\"history-item\"><span>Noch keine Einträge.</span></div>";
     return;
   }
   items.forEach(item => {
@@ -361,7 +361,7 @@ resetAllBtn.addEventListener("click", () => {
   clearTimers();
   setFeedback("Reset.");
   updateHUD();
-  promptEl.textContent = "W?hle eine ?bung und starte.";
+  promptEl.textContent = "Wähle eine Übung und starte.";
   inputArea.innerHTML = "";
 });
 

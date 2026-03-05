@@ -1,9 +1,9 @@
 ﻿[
   {
     "id": "muehle",
-    "title": "M?hle",
+    "title": "Mühle",
     "status": "ready",
-    "description": "Vollst?ndige M?hle-Regeln mit Schlagen und Fliegen.",
+    "description": "Vollständige Mühle-Regeln mit Schlagen und Fliegen.",
     "tags": ["board"],
     "icon": "♟",
     "link": "games/muehle/index.html"
@@ -21,7 +21,7 @@
     "id": "gehirn-jogging",
     "title": "Gehirn-Jogging",
     "status": "prototype",
-    "description": "Mehrere ?bungen mit adaptivem Schwierigkeitsgrad.",
+    "description": "Mehrere Übungen mit adaptivem Schwierigkeitsgrad.",
     "tags": ["experiment", "gadgets"],
     "icon": "🧠",
     "link": "games/gehirn-jogging/index.html"
@@ -30,7 +30,7 @@
     "id": "schach",
     "title": "Schach Mini",
     "status": "coming",
-    "description": "Leichtgewichtiges Schach-UI, sp?ter Regeln.",
+    "description": "Leichtgewichtiges Schach-UI, später Regeln.",
     "tags": ["board", "experiment"],
     "icon": "♞",
     "link": ""
