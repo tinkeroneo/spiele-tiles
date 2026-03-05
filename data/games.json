@@ -37,7 +37,7 @@
     "status": "ready",
     "description": "Parkour mit Katzenflair.",
     "tags": ["arcade"],
-    "link": "../purrkour/index.html"
+    "link": "https://catrun.kiliankellner.com"
   },
   {
     "id": "cat-platformer",
@@ -45,6 +45,6 @@
     "status": "ready",
     "description": "Direkter Sprung in den vorhandenen Platformer.",
     "tags": ["arcade"],
-    "link": "../cat-platformer/index.html"
+    "link": "https://cnr.kiliankellner.com"
   }
 ]
