@@ -1,101 +1,138 @@
 ﻿[
-  {
-    "id": "muehle",
-    "title": "Mühle",
-    "status": "ready",
-    "description": "Vollständige Mühle-Regeln mit Schlagen und Fliegen.",
-    "tags": ["board"],
-    "icon": "♟",
-    "link": "games/muehle/index.html"
-  },
-  {
-    "id": "reaktion",
-    "title": "React",
-    "status": "coming",
-    "description": "Ein schnelles Timing-Gadget zum Warmwerden.",
-    "tags": ["gadgets"],
-    "icon": "⚡",
-    "link": "games/reaktion/index.html"
-  },
-  {
-    "id": "gehirn-jogging",
-    "title": "NoBrainer",
-    "status": "prototype",
-    "description": "Mehrere Übungen mit adaptivem Schwierigkeitsgrad.",
-    "tags": ["experiment", "gadgets"],
-    "icon": "🧠",
-    "link": "games/gehirn-jogging/index.html"
-  },
-  {
-    "id": "schach",
-    "title": "Schach Mini",
-    "status": "prototype",
-    "description": "Schach mit einfachem KI-Gegner.",
-    "tags": ["board", "experiment"],
-    "icon": "♞",
-    "link": "games/schach/index.html"
-  },
-  {
-    "id": "catcart",
-    "title": "Catcart",
-    "status": "prototype",
-    "description": "Mini-Racer mit Checkpoints und Rundenzeit.",
-    "tags": ["arcade", "experiment"],
-    "icon": "🏎️",
-    "link": "games/catcart/index.html"
-  },
-  {
-    "id": "purrkour",
-    "title": "Purrkour",
-    "status": "ready",
-    "description": "Parkour mit Katzenflair.",
-    "tags": ["arcade"],
-    "icon": "🐾",
-    "link": "https://catrun.kiliankellner.com"
-  },
-  {
-    "id": "cat-platformer",
-    "title": "CatJump",
-    "status": "ready",
-    "description": "Direkter Sprung in den vorhandenen Platformer.",
-    "tags": ["arcade"],
-    "icon": "🐱",
-    "link": "https://cnr.kiliankellner.com"
-  },
-  {
-    "id": "2048",
-    "title": "2048",
-    "status": "ready",
-    "description": "2048 Puzzle.",
-    "tags": ["puzzle", "arcade"],
-    "icon": "🔢",
-    "link": "https://2048.kiliankellner.com"
-  },
-  {
-    "id": "rezepte",
-    "title": "Rezepte",
-    "status": "ready",
-    "description": "Deine Rezepte-App.",
-    "tags": ["tools"],
-    "icon": "🍲",
-    "link": "https://cook.tinkeroneo.de"
-  },
-  {
-    "id": "immokredit",
-    "title": "Immo",
-    "status": "prototype",
-    "description": "Kredit, Nebenkosten, Amortisation, Geldanlage, Gehalt und Ausgaben.",
-    "tags": ["tools"],
-    "icon": "🏠",
-    "link": "games/immokredit/index.html"
-  },
-  {
-    "id": "booth",
-    "title": "Booth",
-    "status": "ready",
-    "description": "Foto-Booth App.",
-    "tags": ["tools"],
-    "icon": "📸",
-    "link": "https://booth.kiliankellner.com"
-  }
+    {
+        "id":  "muehle",
+        "title":  "Mühle",
+        "status":  "ready",
+        "description":  "Vollständige Mühle-Regeln mit Schlagen und Fliegen.",
+        "tags":  [
+                     "board"
+                 ],
+        "icon":  "?",
+        "link":  "games/muehle/index.html"
+    },
+    {
+        "id":  "reaktion",
+        "title":  "React",
+        "status":  "coming",
+        "description":  "Ein schnelles Timing-Gadget zum Warmwerden.",
+        "tags":  [
+                     "gadgets"
+                 ],
+        "icon":  "?",
+        "link":  "games/reaktion/index.html"
+    },
+    {
+        "id":  "piano",
+        "title":  "Piano",
+        "status":  "prototype",
+        "description":  "Virtuelles Piano für schnelle Sound-Ideen.",
+        "tags":  [
+                     "gadgets"
+                 ],
+        "icon":  "??",
+        "link":  "games/piano/index.html"
+    },
+    {
+        "id":  "gehirn-jogging",
+        "title":  "NoBrainer",
+        "status":  "prototype",
+        "description":  "Mehrere Übungen mit adaptivem Schwierigkeitsgrad.",
+        "tags":  [
+                     "experiment",
+                     "gadgets"
+                 ],
+        "icon":  "??",
+        "link":  "games/gehirn-jogging/index.html"
+    },
+    {
+        "id":  "schach",
+        "title":  "Schach Mini",
+        "status":  "prototype",
+        "description":  "Schach mit einfachem KI-Gegner.",
+        "tags":  [
+                     "board",
+                     "experiment"
+                 ],
+        "icon":  "?",
+        "link":  "games/schach/index.html"
+    },
+    {
+        "id":  "catcart",
+        "title":  "Catcart",
+        "status":  "prototype",
+        "description":  "Mini-Racer mit Checkpoints und Rundenzeit.",
+        "tags":  [
+                     "arcade",
+                     "experiment"
+                 ],
+        "icon":  "???",
+        "link":  "games/catcart/index.html"
+    },
+    {
+        "id":  "purrkour",
+        "title":  "Purrkour",
+        "status":  "ready",
+        "description":  "Parkour mit Katzenflair.",
+        "tags":  [
+                     "arcade"
+                 ],
+        "icon":  "??",
+        "link":  "https://catrun.kiliankellner.com"
+    },
+    {
+        "id":  "cat-platformer",
+        "title":  "CatJump",
+        "status":  "ready",
+        "description":  "Direkter Sprung in den vorhandenen Platformer.",
+        "tags":  [
+                     "arcade"
+                 ],
+        "icon":  "??",
+        "link":  "https://cnr.kiliankellner.com"
+    },
+    {
+        "id":  "2048",
+        "title":  "2048",
+        "status":  "ready",
+        "description":  "2048 Puzzle.",
+        "tags":  [
+                     "puzzle",
+                     "arcade"
+                 ],
+        "icon":  "??",
+        "link":  "https://2048.kiliankellner.com"
+    },
+    {
+        "id":  "rezepte",
+        "title":  "Rezepte",
+        "status":  "ready",
+        "description":  "Deine Rezepte-App.",
+        "tags":  [
+                     "tools"
+                 ],
+        "icon":  "??",
+        "link":  "https://cook.tinkeroneo.de"
+    },
+    {
+        "id":  "immokredit",
+        "title":  "Immo",
+        "status":  "prototype",
+        "description":  "Kredit, Nebenkosten, Amortisation, Geldanlage, Gehalt und Ausgaben.",
+        "tags":  [
+                     "tools"
+                 ],
+        "icon":  "??",
+        "link":  "games/immokredit/index.html"
+    },
+    {
+        "id":  "booth",
+        "title":  "Booth",
+        "status":  "ready",
+        "description":  "Foto-Booth App.",
+        "tags":  [
+                     "tools"
+                 ],
+        "icon":  "??",
+        "link":  "https://booth.kiliankellner.com"
+    }
 ]

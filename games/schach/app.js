@@ -44,6 +44,10 @@ function pieceAt(r, c) {
   return state.board[r][c];
 }
 
+function pieceAtOn(board, r, c) {
+  return board[r][c];
+}
+
 function colorOf(piece) {
   return piece ? piece[0] : null;
 }
@@ -52,28 +56,8 @@ function typeOf(piece) {
   return piece ? piece[1] : null;
 }
 
-function addMove(moves, r, c) {
-  if (!inBounds(r, c)) return false;
-  const target = pieceAt(r, c);
-  if (!target) {
-    moves.push([r, c]);
-    return true;
-  }
-  return false;
-}
-
-function addCapture(moves, r, c, color) {
-  if (!inBounds(r, c)) return false;
-  const target = pieceAt(r, c);
-  if (target && colorOf(target) !== color) {
-    moves.push([r, c]);
-    return false;
-  }
-  return false;
-}
-
-function genMoves(r, c) {
-  const piece = pieceAt(r, c);
+function genPseudoMoves(board, r, c) {
+  const piece = pieceAtOn(board, r, c);
   if (!piece) return [];
   const color = colorOf(piece);
   const type = typeOf(piece);
@@ -82,15 +66,15 @@ function genMoves(r, c) {
   if (type === "P") {
     const dir = color === "w" ? -1 : 1;
     const startRow = color === "w" ? 6 : 1;
-    if (inBounds(r + dir, c) && !pieceAt(r + dir, c)) {
+    if (inBounds(r + dir, c) && !pieceAtOn(board, r + dir, c)) {
       moves.push([r + dir, c]);
-      if (r === startRow && !pieceAt(r + 2 * dir, c)) {
+      if (r === startRow && !pieceAtOn(board, r + 2 * dir, c)) {
         moves.push([r + 2 * dir, c]);
       }
     }
     [[r + dir, c - 1], [r + dir, c + 1]].forEach(([rr, cc]) => {
       if (inBounds(rr, cc)) {
-        const target = pieceAt(rr, cc);
+        const target = pieceAtOn(board, rr, cc);
         if (target && colorOf(target) !== color) moves.push([rr, cc]);
       }
     });
@@ -100,7 +84,7 @@ function genMoves(r, c) {
     [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr, dc]) => {
       const rr = r + dr, cc = c + dc;
       if (!inBounds(rr, cc)) return;
-      const target = pieceAt(rr, cc);
+      const target = pieceAtOn(board, rr, cc);
       if (!target || colorOf(target) !== color) moves.push([rr, cc]);
     });
   }
@@ -112,7 +96,7 @@ function genMoves(r, c) {
     dirs.forEach(([dr, dc]) => {
       let rr = r + dr, cc = c + dc;
       while (inBounds(rr, cc)) {
-        const target = pieceAt(rr, cc);
+        const target = pieceAtOn(board, rr, cc);
         if (!target) {
           moves.push([rr, cc]);
         } else {
@@ -130,13 +114,122 @@ function genMoves(r, c) {
         if (dr === 0 && dc === 0) continue;
         const rr = r + dr, cc = c + dc;
         if (!inBounds(rr, cc)) continue;
-        const target = pieceAt(rr, cc);
+        const target = pieceAtOn(board, rr, cc);
         if (!target || colorOf(target) !== color) moves.push([rr, cc]);
       }
     }
   }
 
   return moves;
+}
+
+function cloneBoard(board) {
+  return board.map(row => row.slice());
+}
+
+function makeMove(board, from, to) {
+  const next = cloneBoard(board);
+  const [fr, fc] = from;
+  const [tr, tc] = to;
+  next[tr][tc] = next[fr][fc];
+  next[fr][fc] = null;
+  // Promotion
+  if (next[tr][tc] && next[tr][tc][1] === "P" && (tr === 0 || tr === 7)) {
+    next[tr][tc] = next[tr][tc][0] + "Q";
+  }
+  return next;
+}
+
+function findKing(board, color) {
+  for (let r = 0; r < 8; r += 1) {
+    for (let c = 0; c < 8; c += 1) {
+      const piece = pieceAtOn(board, r, c);
+      if (piece && piece[0] === color && piece[1] === "K") return [r, c];
+    }
+  }
+  return null;
+}
+
+function isSquareAttacked(board, r, c, byColor) {
+  // Pawns
+  const dir = byColor === "w" ? -1 : 1;
+  const pawnRows = [[r + dir, c - 1], [r + dir, c + 1]];
+  for (const [rr, cc] of pawnRows) {
+    if (!inBounds(rr, cc)) continue;
+    const p = pieceAtOn(board, rr, cc);
+    if (p && p[0] === byColor && p[1] === "P") return true;
+  }
+
+  // Knights
+  for (const [dr, dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]) {
+    const rr = r + dr, cc = c + dc;
+    if (!inBounds(rr, cc)) continue;
+    const p = pieceAtOn(board, rr, cc);
+    if (p && p[0] === byColor && p[1] === "N") return true;
+  }
+
+  // Bishops / Queens (diagonals)
+  for (const [dr, dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]) {
+    let rr = r + dr, cc = c + dc;
+    while (inBounds(rr, cc)) {
+      const p = pieceAtOn(board, rr, cc);
+      if (p) {
+        if (p[0] === byColor && (p[1] === "B" || p[1] === "Q")) return true;
+        break;
+      }
+      rr += dr; cc += dc;
+    }
+  }
+
+  // Rooks / Queens (orthogonal)
+  for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+    let rr = r + dr, cc = c + dc;
+    while (inBounds(rr, cc)) {
+      const p = pieceAtOn(board, rr, cc);
+      if (p) {
+        if (p[0] === byColor && (p[1] === "R" || p[1] === "Q")) return true;
+        break;
+      }
+      rr += dr; cc += dc;
+    }
+  }
+
+  // King
+  for (let dr = -1; dr <= 1; dr += 1) {
+    for (let dc = -1; dc <= 1; dc += 1) {
+      if (dr === 0 && dc === 0) continue;
+      const rr = r + dr, cc = c + dc;
+      if (!inBounds(rr, cc)) continue;
+      const p = pieceAtOn(board, rr, cc);
+      if (p && p[0] === byColor && p[1] === "K") return true;
+    }
+  }
+
+  return false;
+}
+
+function isInCheck(board, color) {
+  const kingPos = findKing(board, color);
+  if (!kingPos) return false;
+  const [kr, kc] = kingPos;
+  const enemy = color === "w" ? "b" : "w";
+  return isSquareAttacked(board, kr, kc, enemy);
+}
+
+function genLegalMoves(board, r, c) {
+  const piece = pieceAtOn(board, r, c);
+  if (!piece) return [];
+  const color = colorOf(piece);
+  const pseudo = genPseudoMoves(board, r, c);
+  const legal = [];
+
+  for (const [rr, cc] of pseudo) {
+    const target = pieceAtOn(board, rr, cc);
+    if (target && target[1] === "K") continue;
+    const next = makeMove(board, [r, c], [rr, cc]);
+    if (!isInCheck(next, color)) legal.push([rr, cc]);
+  }
+  return legal;
 }
 
 function render() {
@@ -183,6 +276,24 @@ function movePiece(from, to) {
   state.turn = state.turn === "w" ? "b" : "w";
 }
 
+function updateStatus() {
+  const moves = allMoves(state.turn);
+  if (moves.length === 0) {
+    if (isInCheck(state.board, state.turn)) {
+      state.message = state.turn === "w" ? "Schachmatt. Schwarz gewinnt." : "Schachmatt. Weiß gewinnt.";
+    } else {
+      state.message = "Patt. Unentschieden.";
+    }
+    state.gameOver = true;
+    return;
+  }
+  if (isInCheck(state.board, state.turn)) {
+    state.message = state.turn === "w" ? "Schach gegen Weiß." : "Schach gegen Schwarz.";
+  } else {
+    state.message = "";
+  }
+}
+
 function onCellClick(r, c) {
   if (state.gameOver) return;
   const piece = pieceAt(r, c);
@@ -191,15 +302,16 @@ function onCellClick(r, c) {
     const canMove = state.moves.some(m => m[0] === r && m[1] === c);
     if (canMove) {
       movePiece(state.selected, [r, c]);
+      updateStatus();
       render();
-      maybeAiMove();
+      if (!state.gameOver) maybeAiMove();
       return;
     }
   }
 
   if (piece && colorOf(piece) === state.turn) {
     state.selected = [r, c];
-    state.moves = genMoves(r, c);
+    state.moves = genLegalMoves(state.board, r, c);
   } else {
     state.selected = null;
     state.moves = [];
@@ -213,7 +325,7 @@ function allMoves(color) {
     for (let c = 0; c < 8; c += 1) {
       const piece = pieceAt(r, c);
       if (!piece || colorOf(piece) !== color) continue;
-      const m = genMoves(r, c);
+      const m = genLegalMoves(state.board, r, c);
       m.forEach(to => moves.push({ from: [r, c], to }));
     }
   }
@@ -226,8 +338,7 @@ function maybeAiMove() {
   setTimeout(() => {
     const moves = allMoves("b");
     if (!moves.length) {
-      state.message = "Schwarz hat keine Züge.";
-      state.gameOver = true;
+      updateStatus();
       render();
       return;
     }
@@ -237,6 +348,7 @@ function maybeAiMove() {
     });
     const pick = (captures.length ? captures : moves)[Math.floor(Math.random() * (captures.length ? captures.length : moves.length))];
     movePiece(pick.from, pick.to);
+    updateStatus();
     render();
   }, 300);
 }

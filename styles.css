@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #0e1216;
   --bg-accent: #18222b;
   --panel: #141a20;
@@ -10,6 +10,7 @@
   --ok: #58e07d;
   --warn: #ff8a8a;
   --shadow: rgba(7, 10, 13, 0.4);
+  --gutter: clamp(16px, 5vw, 36px);
 }
 
 * { box-sizing: border-box; }
@@ -47,7 +48,7 @@ body {
   gap: 24px;
   justify-content: space-between;
   align-items: center;
-  padding: 48px 6vw 24px;
+  padding: 48px var(--gutter) 24px;
 }
 
 .brand {
@@ -89,10 +90,14 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 0 6vw 12px;
+  padding: 0 var(--gutter) 12px;
 }
 
-.filters { display: flex; flex-wrap: wrap; gap: 10px; }
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
 .search input {
   background: #131a22;
@@ -101,6 +106,8 @@ body {
   border-radius: 12px;
   padding: 10px 12px;
   min-width: 240px;
+  height: 44px;
+  font-size: 16px;
 }
 
 .chip {
@@ -111,6 +118,7 @@ body {
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 40px;
 }
 
 .chip.active, .chip:hover {
@@ -124,9 +132,10 @@ body {
   align-items: center;
   gap: 10px;
   color: var(--muted);
+  font-size: 14px;
 }
 
-main { padding: 12px 6vw 48px; }
+main { padding: 12px var(--gutter) 48px; }
 
 .grid {
   display: grid;
@@ -175,6 +184,7 @@ main { padding: 12px 6vw 48px; }
   display: grid;
   place-items: center;
   font-size: 22px;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "EmojiOne Color", "Segoe UI Symbol", "Noto Emoji", sans-serif;
   background: rgba(255, 179, 71, 0.12);
   border: 1px solid rgba(255, 179, 71, 0.3);
   margin-bottom: 10px;
@@ -207,6 +217,7 @@ main { padding: 12px 6vw 48px; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "EmojiOne Color", "Segoe UI Symbol", "Noto Emoji", sans-serif;
 }
 
 .tag.board { border: 1px solid rgba(97, 210, 255, 0.3); color: #bfe9ff; }
@@ -218,7 +229,7 @@ main { padding: 12px 6vw 48px; }
 
 
 .footer {
-  padding: 12px 6vw 32px;
+  padding: 12px var(--gutter) 32px;
   color: var(--muted);
   font-size: 13px;
 }
@@ -249,6 +260,36 @@ main { padding: 12px 6vw 48px; }
   .search { width: 100%; }
   .search input { width: 100%; }
 }
+
+@media (max-width: 640px) {
+  .bg-orbit { width: 360px; height: 360px; opacity: 0.4; }
+  .hero { padding-top: 32px; gap: 18px; }
+  .hero-right { grid-template-columns: 1fr; }
+  .stat-card { padding: 12px; }
+  .stat-value { font-size: 22px; }
+  .controls { gap: 12px; }
+  .filters {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .search { order: 1; width: 100%; }
+  .filters { order: 2; }
+  .toggle { order: 3; }
+  .grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+  .tile { padding: 14px; min-height: 140px; }
+  .tile-icon { width: 38px; height: 38px; font-size: 18px; border-radius: 12px; }
+}
+
+@media (max-width: 420px) {
+  .hero h1 { font-size: 26px; }
+  .lead { font-size: 14px; }
+  .chip { padding: 6px 12px; }
+}
+
 .tile:hover {
   transform: translateY(-2px);
   border-color: rgba(255, 179, 71, 0.5);

@@ -1,0 +1,31 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Piano</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div>
+        <h1>Piano</h1>
+        <p class="lead">Einfach Tasten tippen oder mit der Maus spielen.</p>
+      </div>
+      <div class="actions">
+        <label class="toggle">
+          <input id="soundToggle" type="checkbox" checked />
+          <span>Sound an</span>
+        </label>
+        <a class="back" href="../../index.html">Zum Hub</a>
+      </div>
+    </header>
+
+    <section class="board" id="keyboard" aria-label="Piano"></section>
+    <div class="hint">Tastatur: A S D F G H J (weiße Tasten) · W E T Y U (schwarze)</div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
