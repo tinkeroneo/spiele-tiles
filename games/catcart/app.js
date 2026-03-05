@@ -8,14 +8,28 @@ const resetBtn = document.getElementById("reset");
 
 const track = {
   outer: { x: 40, y: 40, w: 700, h: 440 },
-  inner: { x: 180, y: 140, w: 420, h: 240 }
+  inner: { x: 190, y: 150, w: 400, h: 220 }
 };
+
+const walls = [
+  { x: 120, y: 120, w: 120, h: 60 },
+  { x: 520, y: 120, w: 120, h: 60 },
+  { x: 520, y: 340, w: 120, h: 60 },
+  { x: 120, y: 340, w: 120, h: 60 },
+  { x: 310, y: 220, w: 160, h: 80 }
+];
 
 const checkpoints = [
   { x: 390, y: 70, r: 24 },
   { x: 680, y: 260, r: 24 },
   { x: 390, y: 450, r: 24 },
   { x: 120, y: 260, r: 24 }
+];
+
+const boostPads = [
+  { x: 300, y: 86, w: 80, h: 18, lastHit: 0 },
+  { x: 400, y: 416, w: 80, h: 18, lastHit: 0 },
+  { x: 652, y: 230, w: 18, h: 60, lastHit: 0 }
 ];
 
 const startLine = { x: 380, y: 40, w: 40, h: 8 };
@@ -28,7 +42,11 @@ const state = {
   lastTime: null,
   bestLap: null,
   hitCheckpoints: new Set(),
-  finished: false
+  startCrossed: false,
+  bestGhost: [],
+  ghostIndex: 0,
+  currentPath: [],
+  boostUntil: 0
 };
 
 function reset() {
@@ -37,7 +55,10 @@ function reset() {
   state.startTime = performance.now();
   state.lastTime = null;
   state.hitCheckpoints = new Set();
-  state.finished = false;
+  state.startCrossed = false;
+  state.currentPath = [];
+  state.ghostIndex = 0;
+  state.boostUntil = 0;
   updateHud();
 }
 
@@ -50,25 +71,24 @@ function updateHud() {
   speedEl.textContent = Math.round(state.kart.speed * 60);
 }
 
+function insideRect(x, y, rect) {
+  return x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
+}
+
 function insideOuter(x, y) {
-  return x > track.outer.x && x < track.outer.x + track.outer.w && y > track.outer.y && y < track.outer.y + track.outer.h;
+  return insideRect(x, y, track.outer);
 }
 
 function insideInner(x, y) {
-  return x > track.inner.x && x < track.inner.x + track.inner.w && y > track.inner.y && y < track.inner.y + track.inner.h;
+  return insideRect(x, y, track.inner);
+}
+
+function insideWall(x, y) {
+  return walls.some(w => insideRect(x, y, w));
 }
 
 function onTrack(x, y) {
-  return insideOuter(x, y) && !insideInner(x, y);
-}
-
-function clampKart() {
-  const k = state.kart;
-  if (!onTrack(k.x, k.y)) {
-    k.speed *= 0.4;
-    k.x = Math.min(Math.max(k.x, track.outer.x + 10), track.outer.x + track.outer.w - 10);
-    k.y = Math.min(Math.max(k.y, track.outer.y + 10), track.outer.y + track.outer.h - 10);
-  }
+  return insideOuter(x, y) && !insideInner(x, y) && !insideWall(x, y);
 }
 
 function updateKart(dt) {
@@ -77,18 +97,26 @@ function updateKart(dt) {
   const brake = state.keys["ArrowDown"] || state.keys["KeyS"] ? 0.03 : 0;
   const turn = (state.keys["ArrowLeft"] || state.keys["KeyA"]) ? -0.035 : (state.keys["ArrowRight"] || state.keys["KeyD"]) ? 0.035 : 0;
 
+  const boostActive = performance.now() < state.boostUntil;
+  const topSpeed = boostActive ? 5.2 : 4.2;
+
   k.speed += accel - brake;
   k.speed *= 0.985;
-  k.speed = Math.max(Math.min(k.speed, 4.2), -1.6);
+  k.speed = Math.max(Math.min(k.speed, topSpeed), -1.6);
 
   if (Math.abs(k.speed) > 0.05) {
     k.angle += turn * (0.6 + Math.abs(k.speed) / 4);
   }
 
+  const prev = { x: k.x, y: k.y };
   k.x += Math.cos(k.angle) * k.speed * dt;
   k.y += Math.sin(k.angle) * k.speed * dt;
 
-  clampKart();
+  if (!onTrack(k.x, k.y)) {
+    k.x = prev.x;
+    k.y = prev.y;
+    k.speed *= 0.3;
+  }
 }
 
 function checkCheckpoints() {
@@ -102,18 +130,51 @@ function checkCheckpoints() {
   });
 }
 
+function checkBoostPads() {
+  const now = performance.now();
+  const k = state.kart;
+  boostPads.forEach(pad => {
+    if (insideRect(k.x, k.y, pad) && now - pad.lastHit > 800) {
+      pad.lastHit = now;
+      state.boostUntil = now + 900;
+    }
+  });
+}
+
 function checkLap() {
   const k = state.kart;
-  if (k.x > startLine.x && k.x < startLine.x + startLine.w && k.y > startLine.y && k.y < startLine.y + startLine.h) {
-    if (state.hitCheckpoints.size === checkpoints.length) {
-      const now = performance.now();
-      const lapTime = (now - state.startTime) / 1000;
-      state.lap += 1;
-      state.startTime = now;
-      state.hitCheckpoints = new Set();
-      if (!state.bestLap || lapTime < state.bestLap) state.bestLap = lapTime;
-    }
+  const onLine = k.x > startLine.x && k.x < startLine.x + startLine.w && k.y > startLine.y && k.y < startLine.y + startLine.h;
+
+  if (!onLine) {
+    state.startCrossed = false;
+    return;
   }
+
+  if (state.startCrossed) return;
+  state.startCrossed = true;
+
+  if (state.hitCheckpoints.size === checkpoints.length) {
+    const now = performance.now();
+    const lapTime = (now - state.startTime) / 1000;
+    state.lap += 1;
+    state.startTime = now;
+    state.hitCheckpoints = new Set();
+
+    if (!state.bestLap || lapTime < state.bestLap) {
+      state.bestLap = lapTime;
+      state.bestGhost = [...state.currentPath];
+    }
+    state.currentPath = [];
+    state.ghostIndex = 0;
+  }
+}
+
+function recordPath(now) {
+  const k = state.kart;
+  if (!state.startTime) return;
+  const t = (now - state.startTime) / 1000;
+  state.currentPath.push({ x: k.x, y: k.y, t });
+  if (state.currentPath.length > 2000) state.currentPath.shift();
 }
 
 function drawTrack() {
@@ -125,31 +186,43 @@ function drawTrack() {
   ctx.strokeRect(track.outer.x, track.outer.y, track.outer.w, track.outer.h);
   ctx.strokeRect(track.inner.x, track.inner.y, track.inner.w, track.inner.h);
 
-  ctx.strokeStyle = "#2b3947";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(track.outer.x + 16, track.outer.y + 16, track.outer.w - 32, track.outer.h - 32);
+  ctx.fillStyle = "#0b1015";
+  walls.forEach(w => ctx.fillRect(w.x, w.y, w.w, w.h));
 
-  ctx.fillStyle = "#202a36";
+  ctx.strokeStyle = "#2b3947";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 10]);
+  ctx.strokeRect(track.outer.x + 26, track.outer.y + 26, track.outer.w - 52, track.outer.h - 52);
+  ctx.setLineDash([]);
+
   checkpoints.forEach((cp, idx) => {
     ctx.beginPath();
     ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
+    ctx.fillStyle = "#202a36";
     ctx.fill();
     ctx.strokeStyle = state.hitCheckpoints.has(idx) ? "#58e07d" : "#3b4c5e";
     ctx.lineWidth = 3;
     ctx.stroke();
   });
 
+  boostPads.forEach(pad => {
+    ctx.fillStyle = "rgba(97, 210, 255, 0.3)";
+    ctx.fillRect(pad.x, pad.y, pad.w, pad.h);
+    ctx.strokeStyle = "#61d2ff";
+    ctx.strokeRect(pad.x, pad.y, pad.w, pad.h);
+  });
+
   ctx.fillStyle = "#ffb347";
   ctx.fillRect(startLine.x, startLine.y, startLine.w, startLine.h);
 }
 
-function drawKart() {
-  const k = state.kart;
+function drawKart(k, ghost = false) {
   ctx.save();
   ctx.translate(k.x, k.y);
-  ctx.rotate(k.angle);
+  ctx.rotate(k.angle || 0);
 
-  ctx.fillStyle = "#ffb347";
+  ctx.globalAlpha = ghost ? 0.45 : 1;
+  ctx.fillStyle = ghost ? "#61d2ff" : "#ffb347";
   ctx.fillRect(-10, -6, 20, 12);
   ctx.fillStyle = "#0c1014";
   ctx.fillRect(-4, -5, 8, 10);
@@ -162,15 +235,28 @@ function drawKart() {
   ctx.restore();
 }
 
+function drawGhost(now) {
+  if (!state.bestGhost.length) return;
+  const lapTime = (now - state.startTime) / 1000;
+  while (state.ghostIndex < state.bestGhost.length - 1 && state.bestGhost[state.ghostIndex].t < lapTime) {
+    state.ghostIndex += 1;
+  }
+  const ghost = state.bestGhost[state.ghostIndex];
+  if (ghost) drawKart({ x: ghost.x, y: ghost.y, angle: 0 }, true);
+}
+
 let last = performance.now();
 function loop(now) {
   const dt = Math.min(20, now - last);
   last = now;
   updateKart(dt);
   checkCheckpoints();
+  checkBoostPads();
   checkLap();
+  recordPath(now);
   drawTrack();
-  drawKart();
+  drawGhost(now);
+  drawKart(state.kart, false);
   updateHud();
   requestAnimationFrame(loop);
 }
