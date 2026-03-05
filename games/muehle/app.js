@@ -5,6 +5,9 @@ const inHandEl = document.getElementById("inHand");
 const onBoardEl = document.getElementById("onBoard");
 const statusEl = document.getElementById("status");
 const resetBtn = document.getElementById("reset");
+const undoBtn = document.getElementById("undo");
+const aiToggle = document.getElementById("aiToggle");
+const aiMoveBtn = document.getElementById("aiMove");
 
 const positions = [
   { x: 5, y: 5 },
@@ -67,6 +70,9 @@ const mills = [
   [1, 9, 17], [3, 11, 19], [5, 13, 21], [7, 15, 23]
 ];
 
+const aiPlayer = "B";
+let aiBusy = false;
+
 const state = {
   board: Array(24).fill(null),
   current: "W",
@@ -75,9 +81,11 @@ const state = {
   totalPlaced: 0,
   inHand: { W: 9, B: 9 },
   message: "",
-  gameOver: false
+  gameOver: false,
+  lastMoveBy: null
 };
 
+const history = [];
 const names = { W: "Weiss", B: "Schwarz" };
 
 function other(player) {
@@ -88,8 +96,8 @@ function phase() {
   return state.totalPlaced < 18 ? "Setzen" : "Schieben";
 }
 
-function piecesOnBoard(player) {
-  return state.board.reduce((acc, value, index) => {
+function piecesOnBoard(player, board = state.board) {
+  return board.reduce((acc, value, index) => {
     if (value === player) acc.push(index);
     return acc;
   }, []);
@@ -101,8 +109,18 @@ function isMillAt(index, player, board) {
   );
 }
 
+function collectMillPoints(player, board) {
+  const result = new Set();
+  mills.forEach(group => {
+    if (group.every(pos => board[pos] === player)) {
+      group.forEach(pos => result.add(pos));
+    }
+  });
+  return result;
+}
+
 function allPiecesInMill(player, board) {
-  const pieces = piecesOnBoard(player);
+  const pieces = piecesOnBoard(player, board);
   return pieces.length > 0 && pieces.every(pos => isMillAt(pos, player, board));
 }
 
@@ -112,18 +130,18 @@ function isCapturable(index, opponent) {
   return allPiecesInMill(opponent, state.board);
 }
 
-function legalMovesFrom(index, player) {
+function legalMovesFrom(index, player, board = state.board) {
   if (phase() === "Setzen") return [];
-  const empty = state.board.map((value, i) => (value ? null : i)).filter(i => i !== null);
-  const flying = piecesOnBoard(player).length === 3;
+  const empty = board.map((value, i) => (value ? null : i)).filter(i => i !== null);
+  const flying = piecesOnBoard(player, board).length === 3;
   if (flying) return empty;
-  return neighbors[index].filter(n => state.board[n] === null);
+  return neighbors[index].filter(n => board[n] === null);
 }
 
-function hasAnyMoves(player) {
+function hasAnyMoves(player, board = state.board) {
   if (phase() === "Setzen") return true;
-  const pieces = piecesOnBoard(player);
-  return pieces.some(pos => legalMovesFrom(pos, player).length > 0);
+  const pieces = piecesOnBoard(player, board);
+  return pieces.some(pos => legalMovesFrom(pos, player, board).length > 0);
 }
 
 function checkWin(opponent) {
@@ -157,12 +175,17 @@ function updateHUD() {
 
 function render() {
   const points = pointsEl.querySelectorAll(".point");
+  const millsW = collectMillPoints("W", state.board);
+  const millsB = collectMillPoints("B", state.board);
+
   points.forEach(point => {
     const index = Number(point.dataset.index);
     const value = state.board[index];
     point.className = "point";
     if (value === "W") point.classList.add("white");
     if (value === "B") point.classList.add("black");
+    if (millsW.has(index)) point.classList.add("mill-white");
+    if (millsB.has(index)) point.classList.add("mill-black");
 
     if (state.gameOver) return;
 
@@ -186,6 +209,37 @@ function render() {
   updateHUD();
 }
 
+function snapshot() {
+  return {
+    board: [...state.board],
+    current: state.current,
+    selected: state.selected,
+    captureMode: state.captureMode,
+    totalPlaced: state.totalPlaced,
+    inHand: { ...state.inHand },
+    message: state.message,
+    gameOver: state.gameOver,
+    lastMoveBy: state.lastMoveBy
+  };
+}
+
+function restore(saved) {
+  state.board = [...saved.board];
+  state.current = saved.current;
+  state.selected = saved.selected;
+  state.captureMode = saved.captureMode;
+  state.totalPlaced = saved.totalPlaced;
+  state.inHand = { ...saved.inHand };
+  state.message = saved.message;
+  state.gameOver = saved.gameOver;
+  state.lastMoveBy = saved.lastMoveBy;
+}
+
+function pushHistory() {
+  history.push(snapshot());
+  if (history.length > 200) history.shift();
+}
+
 function switchTurn() {
   state.current = other(state.current);
   state.selected = null;
@@ -194,9 +248,11 @@ function switchTurn() {
 
 function handlePlace(index) {
   if (state.board[index] !== null) return;
+  pushHistory();
   state.board[index] = state.current;
   state.inHand[state.current] -= 1;
   state.totalPlaced += 1;
+  state.lastMoveBy = state.current;
 
   if (isMillAt(index, state.current, state.board)) {
     state.captureMode = true;
@@ -223,9 +279,11 @@ function handleMove(index) {
   const moves = legalMovesFrom(state.selected, state.current);
   if (!moves.includes(index)) return;
 
+  pushHistory();
   state.board[index] = state.current;
   state.board[state.selected] = null;
   state.selected = null;
+  state.lastMoveBy = state.current;
 
   if (isMillAt(index, state.current, state.board)) {
     state.captureMode = true;
@@ -243,8 +301,10 @@ function handleMove(index) {
 function handleCapture(index) {
   const opponent = other(state.current);
   if (!isCapturable(index, opponent)) return;
+  pushHistory();
   state.board[index] = null;
   state.captureMode = false;
+  state.lastMoveBy = state.current;
 
   if (checkWin(opponent)) {
     state.gameOver = true;
@@ -262,17 +322,20 @@ function handleClick(event) {
   if (state.captureMode) {
     handleCapture(index);
     render();
+    maybeRunAi();
     return;
   }
 
   if (phase() === "Setzen") {
     handlePlace(index);
     render();
+    maybeRunAi();
     return;
   }
 
   handleMove(index);
   render();
+  maybeRunAi();
 }
 
 function setupPoints() {
@@ -296,11 +359,149 @@ function reset() {
   state.inHand = { W: 9, B: 9 };
   state.message = "";
   state.gameOver = false;
+  state.lastMoveBy = null;
+  history.length = 0;
   render();
+}
+
+function undo() {
+  if (!history.length) return;
+  const saved = history.pop();
+  restore(saved);
+  setMessage("Undo.");
+  render();
+}
+
+function findThreats(player, board) {
+  const threats = new Set();
+  mills.forEach(group => {
+    const pieces = group.filter(pos => board[pos] === player).length;
+    const empties = group.filter(pos => board[pos] === null);
+    if (pieces === 2 && empties.length === 1) {
+      threats.add(empties[0]);
+    }
+  });
+  return threats;
+}
+
+function chooseCapture(opponent) {
+  const candidates = state.board
+    .map((value, index) => ({ value, index }))
+    .filter(item => item.value === opponent && isCapturable(item.index, opponent));
+  if (!candidates.length) return null;
+  let best = candidates[0];
+  let bestScore = -1;
+  candidates.forEach(item => {
+    let score = 0;
+    if (isMillAt(item.index, opponent, state.board)) score += 2;
+    if (piecesOnBoard(opponent).length <= 3) score += 3;
+    if (score > bestScore) {
+      best = item;
+      bestScore = score;
+    }
+  });
+  return best.index;
+}
+
+function choosePlacement(player) {
+  const empty = state.board.map((value, i) => (value ? null : i)).filter(i => i !== null);
+  const opponent = other(player);
+
+  for (const pos of empty) {
+    const boardCopy = [...state.board];
+    boardCopy[pos] = player;
+    if (isMillAt(pos, player, boardCopy)) return pos;
+  }
+
+  const threats = findThreats(opponent, state.board);
+  if (threats.size) return Array.from(threats)[0];
+
+  return empty[Math.floor(Math.random() * empty.length)];
+}
+
+function chooseMove(player) {
+  const opponent = other(player);
+  const threats = findThreats(opponent, state.board);
+  const pieces = piecesOnBoard(player);
+  let best = null;
+  let bestScore = -1;
+
+  pieces.forEach(from => {
+    const moves = legalMovesFrom(from, player);
+    moves.forEach(to => {
+      const boardCopy = [...state.board];
+      boardCopy[from] = null;
+      boardCopy[to] = player;
+      let score = 0;
+      if (isMillAt(to, player, boardCopy)) score += 3;
+      if (threats.has(to)) score += 2;
+      if (score > bestScore) {
+        bestScore = score;
+        best = { from, to };
+      }
+    });
+  });
+
+  if (!best) return null;
+  return best;
+}
+
+function runAiTurn() {
+  if (state.gameOver) return;
+  if (state.current !== aiPlayer) return;
+
+  if (state.captureMode) {
+    const target = chooseCapture(other(aiPlayer));
+    if (target !== null) handleCapture(target);
+    return;
+  }
+
+  if (phase() === "Setzen") {
+    const pos = choosePlacement(aiPlayer);
+    if (pos !== null) handlePlace(pos);
+    return;
+  }
+
+  const move = chooseMove(aiPlayer);
+  if (move) {
+    state.selected = move.from;
+    handleMove(move.to);
+  }
+}
+
+function maybeRunAi() {
+  if (!aiToggle.checked) return;
+  if (aiBusy) return;
+  if (state.current !== aiPlayer) return;
+  if (state.gameOver) return;
+
+  aiBusy = true;
+  setTimeout(() => {
+    runAiTurn();
+    render();
+    aiBusy = false;
+    if (state.captureMode && state.current === aiPlayer) {
+      maybeRunAi();
+    }
+  }, 350);
 }
 
 pointsEl.addEventListener("click", handleClick);
 resetBtn.addEventListener("click", reset);
+undoBtn.addEventListener("click", undo);
+aiMoveBtn.addEventListener("click", () => {
+  if (!state.gameOver && state.current === aiPlayer) {
+    runAiTurn();
+    render();
+    if (state.captureMode && state.current === aiPlayer) {
+      runAiTurn();
+      render();
+    }
+  }
+});
+aiToggle.addEventListener("change", () => {
+  if (aiToggle.checked) maybeRunAi();
+});
 
 setupPoints();
 reset();

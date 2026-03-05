@@ -13,8 +13,19 @@
         <h1>Muehle</h1>
         <p class="lead">Setzen, Muehle bilden, schlagen und schieben.</p>
       </div>
-      <button id="reset" class="reset">Neu starten</button>
+      <div class="actions">
+        <button id="undo" class="ghost">Undo</button>
+        <button id="reset" class="reset">Neu starten</button>
+      </div>
     </header>
+
+    <section class="ai-bar">
+      <label class="ai-toggle">
+        <input id="aiToggle" type="checkbox" />
+        <span>KI spielt Schwarz</span>
+      </label>
+      <button id="aiMove" class="ghost">KI Zug</button>
+    </section>
 
     <section class="hud">
       <div class="hud-card">
