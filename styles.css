@@ -212,6 +212,7 @@ main { padding: 12px 6vw 48px; }
 .tag.gadgets { border: 1px solid rgba(88, 224, 125, 0.3); color: #bdf5cd; }
 .tag.experiment { border: 1px solid rgba(255, 138, 138, 0.3); color: #ffd0d0; }
 .tag.tools { border: 1px solid rgba(194, 204, 212, 0.35); color: #e3e8ec; }
+.tag.puzzle { border: 1px solid rgba(255, 208, 138, 0.35); color: #ffe4b3; }
 
 .tile a, .tile button {
   display: inline-flex;

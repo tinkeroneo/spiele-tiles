@@ -16,14 +16,16 @@ const tagLabels = {
   arcade: "Arcade",
   gadgets: "Gadget",
   experiment: "Experiment",
-  tools: "Tool"
+  tools: "Tool",
+  puzzle: "Puzzle"
 };
 const tagIcons = {
   board: "♟",
   arcade: "🕹",
   gadgets: "⚙",
   experiment: "🧪",
-  tools: "🧰"
+  tools: "🧰",
+  puzzle: "🧩"
 };
 
 function showToast(message) {
@@ -80,7 +82,9 @@ function render() {
 
     let action = "";
     if (game.status === "ready" || game.status === "prototype") {
-      action = `<a href="${game.link}">Oeffnen</a>`;
+      const isExternal = /^https?:\/\//.test(game.link);
+      const target = isExternal ? " target=\"_blank\" rel=\"noopener noreferrer\"" : "";
+      action = `<a href="${game.link}"${target}>Oeffnen</a>`;
     } else {
       action = `<button class="secondary" data-id="${game.id}">Merken</button>`;
     }

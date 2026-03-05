@@ -67,7 +67,7 @@
     "title": "2048",
     "status": "ready",
     "description": "2048 Puzzle.",
-    "tags": ["arcade"],
+    "tags": ["puzzle", "arcade"],
     "icon": "🔢",
     "link": "https://2048.kiliankellner.com"
   },
