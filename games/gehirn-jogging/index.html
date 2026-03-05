@@ -1,0 +1,68 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gehirn-Jogging</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div>
+        <h1>Gehirn-Jogging</h1>
+        <p class="lead">Kurze Uebungen, adaptiver Schwierigkeitsgrad.</p>
+      </div>
+      <div class="actions">
+        <button id="resetAll" class="ghost">Reset</button>
+        <a class="back" href="../../index.html">Zum Hub</a>
+      </div>
+    </header>
+
+    <section class="stats">
+      <div class="stat">
+        <div class="label">Level</div>
+        <div id="level" class="value">1</div>
+      </div>
+      <div class="stat">
+        <div class="label">Streak</div>
+        <div id="streak" class="value">0</div>
+      </div>
+      <div class="stat">
+        <div class="label">Genauigkeit</div>
+        <div id="accuracy" class="value">-</div>
+      </div>
+      <div class="stat">
+        <div class="label">Tempo</div>
+        <div id="tempo" class="value">-</div>
+      </div>
+    </section>
+
+    <section class="picker">
+      <div class="picker-left">
+        <label>
+          <span>Uebung</span>
+          <select id="exercise"></select>
+        </label>
+        <label>
+          <span>Modus</span>
+          <select id="mode">
+            <option value="single">Einzeltraining</option>
+            <option value="mix" selected>Mix (random)</option>
+          </select>
+        </label>
+      </div>
+      <button id="start" class="primary">Start</button>
+    </section>
+
+    <section id="stage" class="stage">
+      <div id="prompt" class="prompt">Waehle eine Uebung und starte.</div>
+      <div id="inputArea" class="input-area"></div>
+    </section>
+
+    <div id="feedback" class="feedback">-</div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

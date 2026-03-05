@@ -16,6 +16,14 @@
     "link": "games/reaktion/index.html"
   },
   {
+    "id": "gehirn-jogging",
+    "title": "Gehirn-Jogging",
+    "status": "prototype",
+    "description": "Mehrere Uebungen mit adaptivem Schwierigkeitsgrad.",
+    "tags": ["experiment", "gadgets"],
+    "link": "games/gehirn-jogging/index.html"
+  },
+  {
     "id": "schach",
     "title": "Schach Mini",
     "status": "coming",
