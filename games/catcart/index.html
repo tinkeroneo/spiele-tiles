@@ -1,0 +1,51 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Catcart</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div>
+        <h1>Catcart</h1>
+        <p class="lead">Mini-Racer: Runde fahren, Checkpoints treffen.</p>
+      </div>
+      <div class="actions">
+        <button id="reset" class="ghost">Neu starten</button>
+        <a class="back" href="../../index.html">Zum Hub</a>
+      </div>
+    </header>
+
+    <section class="hud">
+      <div class="hud-card">
+        <div class="label">Runden</div>
+        <div id="laps" class="value">0</div>
+      </div>
+      <div class="hud-card">
+        <div class="label">Zeit</div>
+        <div id="time" class="value">0.0 s</div>
+      </div>
+      <div class="hud-card">
+        <div class="label">Best</div>
+        <div id="best" class="value">-</div>
+      </div>
+      <div class="hud-card">
+        <div class="label">Speed</div>
+        <div id="speed" class="value">0</div>
+      </div>
+    </section>
+
+    <div class="stage">
+      <canvas id="game" width="780" height="520" aria-label="Catcart Spiel"></canvas>
+      <div class="hint">
+        Steuerung: Pfeile oder WASD. Sammle Checkpoints und fahre durch die Startlinie.
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

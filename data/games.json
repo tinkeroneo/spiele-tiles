@@ -38,11 +38,11 @@
   {
     "id": "catcart",
     "title": "Catcart",
-    "status": "coming",
-    "description": "Mario-Kart Vibe mit Katzen.",
+    "status": "prototype",
+    "description": "Mini-Racer mit Checkpoints und Rundenzeit.",
     "tags": ["arcade", "experiment"],
     "icon": "🏎️",
-    "link": ""
+    "link": "games/catcart/index.html"
   },
   {
     "id": "purrkour",
