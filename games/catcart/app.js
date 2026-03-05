@@ -220,9 +220,9 @@ function render() {
   const baseIndex = baseSegment.index;
   const basePercent = (state.position % road.segmentLength) / road.segmentLength;
 
-  let maxY = viewHeight;
   let dx = -baseSegment.curve * basePercent;
   let x = 0;
+  const projected = [];
 
   for (let n = 0; n < road.drawDistance; n += 1) {
     const segment = segments[(baseIndex + n) % segments.length];
@@ -235,48 +235,62 @@ function render() {
     p2.world.x = x + dx;
 
     const camZ = state.position - (segment.looped ? trackLength : 0);
-    if (!project(p1, state.playerX, road.cameraHeight, camZ)) continue;
-    if (!project(p2, state.playerX, road.cameraHeight, camZ)) continue;
+    if (!project(p1, state.playerX, road.cameraHeight, camZ)) {
+      x += dx;
+      dx += segment.curve;
+      continue;
+    }
+    if (!project(p2, state.playerX, road.cameraHeight, camZ)) {
+      x += dx;
+      dx += segment.curve;
+      continue;
+    }
+
+    projected.push({ segment, p1: p1.screen, p2: p2.screen });
 
     x += dx;
     dx += segment.curve;
+  }
 
-    if (p1.screen.y >= maxY) continue;
+  let maxY = viewHeight;
+  for (let i = projected.length - 1; i >= 0; i -= 1) {
+    const { segment, p1, p2 } = projected[i];
+    if (p1.y >= maxY || p2.y >= maxY) continue;
 
     const grass = (Math.floor(segment.index / road.rumbleLength) % 2) ? colors.grass1 : colors.grass2;
     drawSegment(
-      { x: viewWidth / 2, y: p2.screen.y, w: viewWidth },
-      { x: viewWidth / 2, y: p1.screen.y, w: viewWidth },
+      { x: viewWidth / 2, y: p2.y, w: viewWidth },
+      { x: viewWidth / 2, y: p1.y, w: viewWidth },
       grass
     );
 
     const rumble = (Math.floor(segment.index / road.rumbleLength) % 2) ? colors.rumble1 : colors.rumble2;
     drawSegment(
-      { x: p2.screen.x, y: p2.screen.y, w: p2.screen.w * 1.15 },
-      { x: p1.screen.x, y: p1.screen.y, w: p1.screen.w * 1.15 },
+      { x: p2.x, y: p2.y, w: p2.w * 1.15 },
+      { x: p1.x, y: p1.y, w: p1.w * 1.15 },
       rumble
     );
 
     drawSegment(
-      { x: p2.screen.x, y: p2.screen.y, w: p2.screen.w },
-      { x: p1.screen.x, y: p1.screen.y, w: p1.screen.w },
+      { x: p2.x, y: p2.y, w: p2.w },
+      { x: p1.x, y: p1.y, w: p1.w },
       colors.road
     );
 
     if (road.lanes > 1) {
       for (let lane = 1; lane < road.lanes; lane += 1) {
-        const laneX1 = p1.screen.x - p1.screen.w + (p1.screen.w * 2 * lane / road.lanes);
-        const laneX2 = p2.screen.x - p2.screen.w + (p2.screen.w * 2 * lane / road.lanes);
+        const laneX1 = p1.x - p1.w + (p1.w * 2 * lane / road.lanes);
+        const laneX2 = p2.x - p2.w + (p2.w * 2 * lane / road.lanes);
         ctx.strokeStyle = colors.lane;
-        ctx.lineWidth = Math.max(1, p2.screen.w / 140);
+        ctx.lineWidth = Math.max(1, p2.w / 140);
         ctx.beginPath();
-        ctx.moveTo(laneX1, p1.screen.y);
-        ctx.lineTo(laneX2, p2.screen.y);
+        ctx.moveTo(laneX1, p1.y);
+        ctx.lineTo(laneX2, p2.y);
         ctx.stroke();
       }
     }
 
-    maxY = p1.screen.y;
+    maxY = p1.y;
   }
 
   drawCar();
