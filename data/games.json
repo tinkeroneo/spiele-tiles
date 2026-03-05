@@ -29,11 +29,11 @@
   {
     "id": "schach",
     "title": "Schach Mini",
-    "status": "coming",
-    "description": "Leichtgewichtiges Schach-UI, später Regeln.",
+    "status": "prototype",
+    "description": "Schach mit einfachem KI-Gegner.",
     "tags": ["board", "experiment"],
     "icon": "♞",
-    "link": ""
+    "link": "games/schach/index.html"
   },
   {
     "id": "catcart",
