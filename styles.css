@@ -253,3 +253,14 @@ main { padding: 12px 6vw 48px; }
   transform: translateY(-2px);
   border-color: rgba(255, 179, 71, 0.5);
 }
+
+.tile.coming {
+  opacity: 0.6;
+  cursor: default;
+  filter: grayscale(0.2);
+}
+
+.tile.coming:hover {
+  transform: translateY(0);
+  border-color: #243041;
+}

@@ -73,6 +73,7 @@ function render() {
   list.forEach((game, index) => {
     const tile = document.createElement("article");
     tile.className = "tile";
+    if (game.status === "coming") tile.classList.add("coming");
     tile.style.animationDelay = `${index * 40}ms`;
 
     const badge = `<span class="badge ${game.status}">${game.status}</span>`;
