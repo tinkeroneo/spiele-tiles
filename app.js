@@ -80,14 +80,10 @@ function render() {
       .map(tag => `<span class="tag ${tag}">${tagIcons[tag] || "•"} ${tagLabels[tag] || tag}</span>`)
       .join("");
 
-    let action = "";
-    if (game.status === "ready" || game.status === "prototype") {
-      const isExternal = /^https?:\/\//.test(game.link);
-      const target = isExternal ? " target=\"_blank\" rel=\"noopener noreferrer\"" : "";
-      action = `<a href="${game.link}"${target}>Oeffnen</a>`;
-    } else {
-      action = `<button class="secondary" data-id="${game.id}">Merken</button>`;
-    }
+    const hasLink = (game.status === "ready" || game.status === "prototype") && game.link;
+    tile.dataset.link = hasLink ? game.link : "";
+    tile.dataset.external = hasLink && /^https?:\/\//.test(game.link) ? "1" : "0";
+    tile.tabIndex = hasLink ? 0 : -1;
 
     tile.innerHTML = `
       ${badge}
@@ -95,7 +91,6 @@ function render() {
       <h3>${game.title}</h3>
       <p>${game.description}</p>
       <div class="tags">${tags}</div>
-      ${action}
     `;
 
     grid.appendChild(tile);
@@ -113,10 +108,26 @@ filters.forEach(chip => {
 });
 
 grid.addEventListener("click", (event) => {
-  const button = event.target.closest("button");
-  if (!button) return;
-  const game = games.find(g => g.id === button.dataset.id);
-  if (game) showToast(`${game.title} ist auf der Liste.`);
+  const tile = event.target.closest(".tile");
+  if (!tile) return;
+  const link = tile.dataset.link;
+  if (!link) {
+    const title = tile.querySelector("h3")?.textContent || "Dieses Spiel";
+    showToast(`${title} ist auf der Liste.`);
+    return;
+  }
+  if (tile.dataset.external === "1") {
+    window.open(link, "_blank", "noopener");
+  } else {
+    window.location.href = link;
+  }
+});
+
+grid.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  const tile = event.target.closest(".tile");
+  if (!tile) return;
+  tile.click();
 });
 
 toggleComing.addEventListener("change", render);
