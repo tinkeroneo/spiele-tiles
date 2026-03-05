@@ -5,6 +5,7 @@
     "status": "ready",
     "description": "Vollstaendige Muehle-Regeln mit Schlagen und Fliegen.",
     "tags": ["board"],
+    "icon": "♟",
     "link": "games/muehle/index.html"
   },
   {
@@ -13,6 +14,7 @@
     "status": "prototype",
     "description": "Ein schnelles Timing-Gadget zum Warmwerden.",
     "tags": ["gadgets"],
+    "icon": "⚡",
     "link": "games/reaktion/index.html"
   },
   {
@@ -21,6 +23,7 @@
     "status": "prototype",
     "description": "Mehrere Uebungen mit adaptivem Schwierigkeitsgrad.",
     "tags": ["experiment", "gadgets"],
+    "icon": "🧠",
     "link": "games/gehirn-jogging/index.html"
   },
   {
@@ -29,6 +32,7 @@
     "status": "coming",
     "description": "Leichtgewichtiges Schach-UI, spaeter Regeln.",
     "tags": ["board", "experiment"],
+    "icon": "♞",
     "link": ""
   },
   {
@@ -37,6 +41,7 @@
     "status": "ready",
     "description": "Parkour mit Katzenflair.",
     "tags": ["arcade"],
+    "icon": "🐾",
     "link": "https://catrun.kiliankellner.com"
   },
   {
@@ -45,6 +50,7 @@
     "status": "ready",
     "description": "Direkter Sprung in den vorhandenen Platformer.",
     "tags": ["arcade"],
+    "icon": "🐱",
     "link": "https://cnr.kiliankellner.com"
   },
   {
@@ -52,7 +58,17 @@
     "title": "Rezepte",
     "status": "ready",
     "description": "Deine Rezepte-App.",
-    "tags": ["gadgets"],
+    "tags": ["tools"],
+    "icon": "🍲",
     "link": "https://cook.tinkeroneo.de"
+  },
+  {
+    "id": "booth",
+    "title": "Booth",
+    "status": "ready",
+    "description": "Booth-App.",
+    "tags": ["tools"],
+    "icon": "📷",
+    "link": "https://booth.kiliankellner.com"
   }
 ]
