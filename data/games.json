@@ -82,7 +82,7 @@
   },
   {
     "id": "immokredit",
-    "title": "ImmoKredit",
+    "title": "Immo",
     "status": "prototype",
     "description": "Kredit, Nebenkosten, Amortisation, Geldanlage, Gehalt und Ausgaben.",
     "tags": ["tools"],
