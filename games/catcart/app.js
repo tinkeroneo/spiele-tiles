@@ -51,6 +51,7 @@ const state = {
   currentPath: [],
   boostUntil: 0,
   raceStarted: false,
+  awaitingStart: true,
   countdownTimer: null,
   audioOn: false
 };
@@ -93,8 +94,10 @@ function reset() {
   state.ghostIndex = 0;
   state.boostUntil = 0;
   state.raceStarted = false;
+  state.awaitingStart = true;
   updateHud();
-  startCountdown();
+  countdownEl.textContent = "START";
+  countdownEl.classList.add("show");
 }
 
 function updateHud() {
@@ -104,6 +107,12 @@ function updateHud() {
   timeEl.textContent = `${timeSec.toFixed(1)} s`;
   bestEl.textContent = state.bestLap ? `${state.bestLap.toFixed(2)} s` : "-";
   speedEl.textContent = Math.round(state.kart.speed * 60);
+}
+
+function requestStart() {
+  if (!state.awaitingStart) return;
+  state.awaitingStart = false;
+  startCountdown();
 }
 
 function startCountdown() {
@@ -155,29 +164,30 @@ function onTrack(x, y) {
 function updateKart(dt) {
   if (!state.raceStarted) return;
   const k = state.kart;
-  const accel = state.keys["ArrowUp"] || state.keys["KeyW"] ? 0.02 : 0;
-  const brake = state.keys["ArrowDown"] || state.keys["KeyS"] ? 0.03 : 0;
-  const turn = (state.keys["ArrowLeft"] || state.keys["KeyA"]) ? -0.035 : (state.keys["ArrowRight"] || state.keys["KeyD"]) ? 0.035 : 0;
+  const accel = state.keys["ArrowUp"] || state.keys["KeyW"] ? 0.18 : 0;
+  const brake = state.keys["ArrowDown"] || state.keys["KeyS"] ? 0.26 : 0;
+  const turn = (state.keys["ArrowLeft"] || state.keys["KeyA"]) ? -0.06 : (state.keys["ArrowRight"] || state.keys["KeyD"]) ? 0.06 : 0;
+  const dtScale = dt / 16.67;
 
   const boostActive = performance.now() < state.boostUntil;
-  const topSpeed = boostActive ? 5.2 : 4.2;
+  const topSpeed = boostActive ? 3.2 : 2.6;
 
-  k.speed += accel - brake;
-  k.speed *= 0.985;
-  k.speed = Math.max(Math.min(k.speed, topSpeed), -1.6);
+  k.speed += (accel - brake) * dtScale;
+  k.speed *= 0.96;
+  k.speed = Math.max(Math.min(k.speed, topSpeed), -1.2);
 
   if (Math.abs(k.speed) > 0.05) {
     k.angle += turn * (0.6 + Math.abs(k.speed) / 4);
   }
 
   const prev = { x: k.x, y: k.y };
-  k.x += Math.cos(k.angle) * k.speed * dt;
-  k.y += Math.sin(k.angle) * k.speed * dt;
+  k.x += Math.cos(k.angle) * k.speed * 16 * dtScale;
+  k.y += Math.sin(k.angle) * k.speed * 16 * dtScale;
 
   if (!onTrack(k.x, k.y)) {
     k.x = prev.x;
     k.y = prev.y;
-    k.speed *= 0.3;
+    k.speed *= 0.4;
   }
 }
 
@@ -243,15 +253,18 @@ function recordPath(now) {
 }
 
 function drawTrack() {
-  ctx.fillStyle = "#0b1015";
+  ctx.fillStyle = "#0a0f14";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.strokeStyle = "#3b4c5e";
-  ctx.lineWidth = 8;
-  ctx.strokeRect(track.outer.x, track.outer.y, track.outer.w, track.outer.h);
-  ctx.strokeRect(track.inner.x, track.inner.y, track.inner.w, track.inner.h);
+  ctx.fillStyle = "#0f1a12";
+  ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
 
-  ctx.fillStyle = "#0b1015";
+  ctx.fillStyle = "#1a232c";
+  ctx.fillRect(track.outer.x, track.outer.y, track.outer.w, track.outer.h);
+  ctx.fillStyle = "#0f1a12";
+  ctx.fillRect(track.inner.x, track.inner.y, track.inner.w, track.inner.h);
+
+  ctx.fillStyle = "#131b24";
   walls.forEach(w => ctx.fillRect(w.x, w.y, w.w, w.h));
 
   ctx.strokeStyle = "#2b3947";
@@ -263,7 +276,7 @@ function drawTrack() {
   checkpoints.forEach((cp, idx) => {
     ctx.beginPath();
     ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
-    ctx.fillStyle = "#202a36";
+    ctx.fillStyle = "#1c2732";
     ctx.fill();
     ctx.strokeStyle = state.hitCheckpoints.has(idx) ? "#58e07d" : "#3b4c5e";
     ctx.lineWidth = 3;
@@ -288,13 +301,19 @@ function drawKart(k, ghost = false) {
 
   ctx.globalAlpha = ghost ? 0.45 : 1;
   ctx.fillStyle = ghost ? "#61d2ff" : "#ffb347";
-  ctx.fillRect(-10, -6, 20, 12);
+  ctx.fillRect(-14, -8, 28, 16);
   ctx.fillStyle = "#0c1014";
-  ctx.fillRect(-4, -5, 8, 10);
+  ctx.fillRect(-6, -7, 12, 14);
+
+  ctx.fillStyle = "#2b3947";
+  ctx.fillRect(-12, -10, 6, 4);
+  ctx.fillRect(6, -10, 6, 4);
+  ctx.fillRect(-12, 6, 6, 4);
+  ctx.fillRect(6, 6, 6, 4);
 
   ctx.fillStyle = "#f2f5f7";
   ctx.beginPath();
-  ctx.arc(10, 0, 4, 0, Math.PI * 2);
+  ctx.arc(12, 0, 4, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.restore();
@@ -328,6 +347,7 @@ function loop(now) {
 
 window.addEventListener("keydown", (e) => {
   state.keys[e.code] = true;
+  requestStart();
 });
 
 window.addEventListener("keyup", (e) => {
@@ -339,6 +359,7 @@ touchButtons.forEach(btn => {
   btn.addEventListener("pointerdown", (e) => {
     e.preventDefault();
     state.keys[key] = true;
+    requestStart();
   });
   btn.addEventListener("pointerup", () => { state.keys[key] = false; });
   btn.addEventListener("pointerleave", () => { state.keys[key] = false; });
