@@ -66,9 +66,9 @@
     "id": "booth",
     "title": "Booth",
     "status": "ready",
-    "description": "Booth-App.",
+    "description": "Foto-Booth App.",
     "tags": ["tools"],
-    "icon": "📷",
+    "icon": "📸",
     "link": "https://booth.kiliankellner.com"
   }
 ]
