@@ -4,9 +4,27 @@ const statusSummary = document.getElementById("statusSummary");
 const toast = document.getElementById("toast");
 const filters = Array.from(document.querySelectorAll(".chip"));
 const toggleComing = document.getElementById("toggleComing");
+const searchInput = document.getElementById("searchInput");
 
 let games = [];
 let activeFilter = "all";
+let searchTerm = "";
+
+const statusOrder = { ready: 0, prototype: 1, coming: 2 };
+const tagLabels = {
+  board: "Brett",
+  arcade: "Arcade",
+  gadgets: "Gadget",
+  experiment: "Experiment",
+  tools: "Tool"
+};
+const tagIcons = {
+  board: "♟",
+  arcade: "🕹",
+  gadgets: "⚙",
+  experiment: "🧪",
+  tools: "🧰"
+};
 
 function showToast(message) {
   toast.textContent = message;
@@ -32,6 +50,21 @@ function render() {
   if (!toggleComing.checked) {
     list = list.filter(g => g.status !== "coming");
   }
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    list = list.filter(g =>
+      g.title.toLowerCase().includes(term) ||
+      g.description.toLowerCase().includes(term) ||
+      g.tags.some(tag => tag.toLowerCase().includes(term))
+    );
+  }
+
+  list = [...list].sort((a, b) => {
+    const sa = statusOrder[a.status] ?? 9;
+    const sb = statusOrder[b.status] ?? 9;
+    if (sa !== sb) return sa - sb;
+    return a.title.localeCompare(b.title);
+  });
 
   setStats(list);
 
@@ -41,7 +74,9 @@ function render() {
     tile.style.animationDelay = `${index * 40}ms`;
 
     const badge = `<span class="badge ${game.status}">${game.status}</span>`;
-    const tags = game.tags.map(tag => `<span class="tag">${tag}</span>`).join("");
+    const tags = game.tags
+      .map(tag => `<span class="tag ${tag}">${tagIcons[tag] || "•"} ${tagLabels[tag] || tag}</span>`)
+      .join("");
 
     let action = "";
     if (game.status === "ready" || game.status === "prototype") {
@@ -52,6 +87,7 @@ function render() {
 
     tile.innerHTML = `
       ${badge}
+      ${game.icon ? `<div class="tile-icon">${game.icon}</div>` : ""}
       <h3>${game.title}</h3>
       <p>${game.description}</p>
       <div class="tags">${tags}</div>
@@ -80,6 +116,10 @@ grid.addEventListener("click", (event) => {
 });
 
 toggleComing.addEventListener("change", render);
+searchInput.addEventListener("input", (event) => {
+  searchTerm = event.target.value.trim();
+  render();
+});
 
 fetch("data/games.json")
   .then(res => res.json())

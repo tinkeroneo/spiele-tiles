@@ -94,6 +94,15 @@ body {
 
 .filters { display: flex; flex-wrap: wrap; gap: 10px; }
 
+.search input {
+  background: #131a22;
+  color: var(--text);
+  border: 1px solid #2c3945;
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-width: 240px;
+}
+
 .chip {
   border: 1px solid #2c3945;
   background: transparent;
@@ -157,6 +166,18 @@ main { padding: 12px 6vw 48px; }
 
 .tile p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
 
+.tile-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  background: rgba(255, 179, 71, 0.12);
+  border: 1px solid rgba(255, 179, 71, 0.3);
+  margin-bottom: 10px;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -181,7 +202,16 @@ main { padding: 12px 6vw 48px; }
   background: #1b2430;
   border-radius: 999px;
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
+
+.tag.board { border: 1px solid rgba(97, 210, 255, 0.3); color: #bfe9ff; }
+.tag.arcade { border: 1px solid rgba(255, 179, 71, 0.35); color: #ffd08a; }
+.tag.gadgets { border: 1px solid rgba(88, 224, 125, 0.3); color: #bdf5cd; }
+.tag.experiment { border: 1px solid rgba(255, 138, 138, 0.3); color: #ffd0d0; }
+.tag.tools { border: 1px solid rgba(194, 204, 212, 0.35); color: #e3e8ec; }
 
 .tile a, .tile button {
   display: inline-flex;
@@ -232,4 +262,6 @@ main { padding: 12px 6vw 48px; }
   .hero { flex-direction: column; align-items: flex-start; }
   .hero-right { width: 100%; grid-template-columns: repeat(2, 1fr); }
   .controls { flex-direction: column; align-items: flex-start; }
+  .search { width: 100%; }
+  .search input { width: 100%; }
 }

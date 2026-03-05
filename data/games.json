@@ -36,6 +36,15 @@
     "link": ""
   },
   {
+    "id": "catcart",
+    "title": "Catcart",
+    "status": "coming",
+    "description": "Mario-Kart Vibe mit Katzen.",
+    "tags": ["arcade", "experiment"],
+    "icon": "🏎️",
+    "link": ""
+  },
+  {
     "id": "purrkour",
     "title": "Purrkour",
     "status": "ready",
