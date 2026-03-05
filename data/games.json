@@ -7,7 +7,7 @@
         "tags":  [
                      "board"
                  ],
-        "icon":  "?",
+        "icon":  "♟",
         "link":  "games/muehle/index.html"
     },
     {
@@ -18,7 +18,7 @@
         "tags":  [
                      "gadgets"
                  ],
-        "icon":  "?",
+        "icon":  "⚡",
         "link":  "games/reaktion/index.html"
     },
     {
@@ -29,7 +29,7 @@
         "tags":  [
                      "gadgets"
                  ],
-        "icon":  "??",
+        "icon":  "🎹",
         "link":  "games/piano/index.html"
     },
     {
@@ -41,7 +41,7 @@
                      "experiment",
                      "gadgets"
                  ],
-        "icon":  "??",
+        "icon":  "🧠",
         "link":  "games/gehirn-jogging/index.html"
     },
     {
@@ -53,7 +53,7 @@
                      "board",
                      "experiment"
                  ],
-        "icon":  "?",
+        "icon":  "♞",
         "link":  "games/schach/index.html"
     },
     {
@@ -65,7 +65,7 @@
                      "arcade",
                      "experiment"
                  ],
-        "icon":  "???",
+        "icon":  "🏎️",
         "link":  "games/catcart/index.html"
     },
     {
@@ -76,7 +76,7 @@
         "tags":  [
                      "arcade"
                  ],
-        "icon":  "??",
+        "icon":  "🐾",
         "link":  "https://catrun.kiliankellner.com"
     },
     {
@@ -87,7 +87,7 @@
         "tags":  [
                      "arcade"
                  ],
-        "icon":  "??",
+        "icon":  "🐱",
         "link":  "https://cnr.kiliankellner.com"
     },
     {
@@ -99,7 +99,7 @@
                      "puzzle",
                      "arcade"
                  ],
-        "icon":  "??",
+        "icon":  "🔢",
         "link":  "https://2048.kiliankellner.com"
     },
     {
@@ -110,7 +110,7 @@
         "tags":  [
                      "tools"
                  ],
-        "icon":  "??",
+        "icon":  "🍲",
         "link":  "https://cook.tinkeroneo.de"
     },
     {
@@ -121,7 +121,7 @@
         "tags":  [
                      "tools"
                  ],
-        "icon":  "??",
+        "icon":  "🏠",
         "link":  "games/immokredit/index.html"
     },
     {
@@ -132,7 +132,7 @@
         "tags":  [
                      "tools"
                  ],
-        "icon":  "??",
+        "icon":  "📸",
         "link":  "https://booth.kiliankellner.com"
     }
 ]
