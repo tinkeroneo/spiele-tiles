@@ -72,6 +72,15 @@
     "link": "https://cook.tinkeroneo.de"
   },
   {
+    "id": "immokredit",
+    "title": "ImmoKredit Tool",
+    "status": "prototype",
+    "description": "Kredit, Nebenkosten, Amortisation, Geldanlage, Gehalt und Ausgaben.",
+    "tags": ["tools"],
+    "icon": "🏠",
+    "link": "games/immokredit/index.html"
+  },
+  {
     "id": "booth",
     "title": "Booth",
     "status": "ready",

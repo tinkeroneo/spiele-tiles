@@ -1,0 +1,228 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ImmoKredit Tool</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div>
+        <h1>ImmoKredit Tool</h1>
+        <p class="lead">Kredit, Nebenkosten, Amortisation, Geldanlage, Gehalt und Ausgaben.</p>
+      </div>
+      <div class="actions">
+        <button id="resetAll" class="ghost">Reset</button>
+        <a class="back" href="../../index.html">Zum Hub</a>
+      </div>
+    </header>
+
+    <section class="tabs">
+      <button class="tab active" data-tab="kredit">Kredit</button>
+      <button class="tab" data-tab="amort">Amortisation</button>
+      <button class="tab" data-tab="neben">Nebenkosten & EK</button>
+      <button class="tab" data-tab="anlage">Geldanlage</button>
+      <button class="tab" data-tab="gehalt">Gehalt</button>
+      <button class="tab" data-tab="ausgaben">Ausgaben</button>
+    </section>
+
+    <section id="kredit" class="panel active">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Grunddaten</h2>
+          <label>Kaufbetrag <input id="kaufbetrag" type="number" value="350000" /></label>
+          <label>Zinssatz p.a. (%) <input id="zins" type="number" step="0.01" value="2.2" /></label>
+          <label>Laufzeit max (Jahre) <input id="laufzeit" type="number" value="30" /></label>
+          <label>Raten/Jahr <input id="ratenProJahr" type="number" value="12" /></label>
+          <label>Monatsrate <input id="rate" type="number" value="2000" /></label>
+          <label>Startdatum <input id="startdatum" type="date" /></label>
+          <label>Sondertilgungstakt (Monate) <input id="sonderTakt" type="number" value="12" /></label>
+          <label>Sondertilgung (Betrag) <input id="sonderBetrag" type="number" value="5000" /></label>
+        </div>
+        <div class="card">
+          <h2>Ergebnis</h2>
+          <div class="stat">
+            <div class="label">Kreditbetrag</div>
+            <div id="kreditbetrag" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Gesamtkosten inkl. Zinsen</div>
+            <div id="gesamtKosten" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Zinskosten gesamt</div>
+            <div id="zinsKosten" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Laufzeit (Monate)</div>
+            <div id="laufzeitMon" class="value">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="amort" class="panel">
+      <div class="card">
+        <h2>Amortisationsplan</h2>
+        <div class="table-wrap">
+          <table id="amortTable">
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Zahlung</th>
+                <th>Tilgung</th>
+                <th>Zinsen</th>
+                <th>Restschuld</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="neben" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Nebenkosten</h2>
+          <label>Makler (%) <input id="makler" type="number" step="0.01" value="3.57" /></label>
+          <label>Grunderwerb (%) <input id="grunderwerb" type="number" step="0.01" value="3.5" /></label>
+          <label>Notar (%) <input id="notar" type="number" step="0.01" value="1.5" /></label>
+          <label>Grundbuch (%) <input id="grundbuch" type="number" step="0.01" value="0.5" /></label>
+          <label>Notaranderkonto (%) <input id="notarander" type="number" step="0.01" value="0" /></label>
+          <label>Partnervertrag (%) <input id="partnervertrag" type="number" step="0.01" value="0" /></label>
+          <label>Renovierung/Sanierung <input id="renovierung" type="number" value="0" /></label>
+        </div>
+        <div class="card">
+          <h2>Eigenkapital</h2>
+          <label>Eigenkapital Person A <input id="ekA" type="number" value="0" /></label>
+          <label>EK Reserve Person A <input id="ekARes" type="number" value="0" /></label>
+          <label>Eigenkapital Person B <input id="ekB" type="number" value="0" /></label>
+          <label>EK Reserve Person B <input id="ekBRes" type="number" value="0" /></label>
+          <label>Zuschuss Person C <input id="ekC" type="number" value="0" /></label>
+          <div class="stat">
+            <div class="label">Gesamtkosten</div>
+            <div id="gesamtKostenOhneZins" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Eigenkapital gesamt</div>
+            <div id="ekGesamt" class="value">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="anlage" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Geldanlage</h2>
+          <label>Anlagebetrag (Start) <input id="anlageStart" type="number" value="150000" /></label>
+          <label>Zinssatz p.a. (%) <input id="anlageZins" type="number" step="0.01" value="6.5" /></label>
+          <label>Laufzeit (Jahre) <input id="anlageJahre" type="number" value="20" /></label>
+          <label>Zahlungen pro Jahr <input id="anlageZahlungen" type="number" value="12" /></label>
+          <label>Einzahlung pro Zahlung <input id="anlageEinzahlung" type="number" value="1381" /></label>
+        </div>
+        <div class="card">
+          <h2>Ergebnis</h2>
+          <div class="stat">
+            <div class="label">Gesamtanlagebetrag</div>
+            <div id="anlageGesamt" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Gesamtertrag</div>
+            <div id="anlageErtrag" class="value">-</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Anlageplan</h2>
+        <div class="table-wrap">
+          <table id="anlageTable">
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Einzahlung</th>
+                <th>Ertrag</th>
+                <th>Gesamtertrag</th>
+                <th>Gesamtanlage</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="gehalt" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Gehalt</h2>
+          <label>Startgehalt (Jahr) <input id="gehaltStart" type="number" value="42000" /></label>
+          <label>Steigerung p.a. (%) <input id="gehaltSteig" type="number" step="0.01" value="4.5" /></label>
+          <label>Jahre <input id="gehaltJahre" type="number" value="10" /></label>
+          <label>Split (Fix/Variabel, z. B. 80/20) <input id="gehaltSplit" type="text" value="80/20" /></label>
+        </div>
+        <div class="card">
+          <h2>Übersicht</h2>
+          <div class="table-wrap">
+            <table id="gehaltTable">
+              <thead>
+                <tr>
+                  <th>Jahr</th>
+                  <th>Zielgehalt</th>
+                  <th>Fix (Jahr)</th>
+                  <th>Variabel (Jahr)</th>
+                  <th>Monat Fix</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ausgaben" class="panel">
+      <div class="card">
+        <h2>Ausgaben</h2>
+        <div class="toolbar">
+          <button id="addExpense" class="ghost">+ Eintrag</button>
+        </div>
+        <div class="table-wrap">
+          <table id="expenseTable">
+            <thead>
+              <tr>
+                <th>Wer</th>
+                <th>Was</th>
+                <th>Häufigkeit/Jahr</th>
+                <th>Betrag</th>
+                <th>Betrag/Jahr</th>
+                <th>Betrag/Monat</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="stats-row">
+          <div class="stat">
+            <div class="label">Monatlich Gesamt</div>
+            <div id="expTotalMonth" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Person A Monat</div>
+            <div id="expA" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Person B Monat</div>
+            <div id="expB" class="value">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
