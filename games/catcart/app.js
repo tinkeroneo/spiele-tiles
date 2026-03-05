@@ -15,12 +15,12 @@ let viewHeight = canvas.height;
 let dpr = window.devicePixelRatio || 1;
 
 const road = {
-  segmentLength: 12,
-  roadWidth: 1.2,
+  segmentLength: 200,
+  roadWidth: 2000,
   rumbleLength: 3,
   lanes: 2,
-  cameraHeight: 1.1,
-  drawDistance: 220,
+  cameraHeight: 1000,
+  drawDistance: 180,
   fieldOfView: 90
 };
 
@@ -155,7 +155,7 @@ function addSegment(curve = 0, y = 0) {
 
 function addRoad(enter, hold, leave, curve, hill) {
   const startY = segments.length ? segments[segments.length - 1].p2.world.y : 0;
-  const endY = startY + hill;
+  const endY = startY + hill * road.segmentLength;
   const total = enter + hold + leave;
 
   for (let i = 0; i < enter; i += 1) {
@@ -172,12 +172,12 @@ function addRoad(enter, hold, leave, curve, hill) {
 function buildTrack() {
   segments = [];
   addRoad(20, 80, 20, 0, 0);
-  addRoad(20, 50, 20, 0.002, 0.08);
-  addRoad(20, 60, 20, -0.002, -0.06);
-  addRoad(20, 40, 20, 0.003, 0.1);
-  addRoad(20, 70, 20, -0.0025, -0.08);
-  addRoad(20, 60, 20, 0.0015, 0.05);
-  addRoad(20, 90, 20, 0, -0.04);
+  addRoad(20, 50, 20, 0.8, 0);
+  addRoad(20, 60, 20, -0.6, 0.3);
+  addRoad(20, 40, 20, 1.0, -0.2);
+  addRoad(20, 70, 20, -0.8, -0.3);
+  addRoad(20, 60, 20, 0.4, 0.2);
+  addRoad(20, 90, 20, 0, -0.4);
 
   trackLength = segments.length * road.segmentLength;
 }
@@ -191,12 +191,12 @@ function project(p, cameraX, cameraY, cameraZ) {
   const transX = p.world.x - cameraX;
   const transY = p.world.y - cameraY;
   const transZ = p.world.z - cameraZ;
-  if (transZ <= 0.001) return false;
+  if (transZ <= 1) return false;
 
   p.screen = p.screen || {};
   p.screen.scale = cameraDepth / transZ;
-  p.screen.x = Math.round((1 + p.screen.scale * transX) * viewWidth / 2);
-  p.screen.y = Math.round((1 - p.screen.scale * transY) * viewHeight / 2);
+  p.screen.x = Math.round((1 + p.screen.scale * transX / road.roadWidth) * viewWidth / 2);
+  p.screen.y = Math.round((1 - p.screen.scale * transY / road.roadWidth) * viewHeight / 2);
   p.screen.w = Math.round(p.screen.scale * viewWidth * road.roadWidth / 2);
   return true;
 }
@@ -235,12 +235,12 @@ function render() {
     p2.world.x = x + dx;
 
     const camZ = state.position - (segment.looped ? trackLength : 0);
-    if (!project(p1, state.playerX, road.cameraHeight, camZ)) {
+    if (!project(p1, state.playerX * road.roadWidth, road.cameraHeight, camZ)) {
       x += dx;
       dx += segment.curve;
       continue;
     }
-    if (!project(p2, state.playerX, road.cameraHeight, camZ)) {
+    if (!project(p2, state.playerX * road.roadWidth, road.cameraHeight, camZ)) {
       x += dx;
       dx += segment.curve;
       continue;
@@ -299,7 +299,7 @@ function render() {
 function drawCar() {
   const carW = 50;
   const carH = 90;
-  const x = viewWidth / 2 + state.playerX * viewWidth * 0.28;
+  const x = viewWidth / 2 + state.playerX * viewWidth * 0.25;
   const y = viewHeight - 140;
 
   ctx.fillStyle = "#ffb347";
@@ -314,8 +314,8 @@ function drawCar() {
 
 function update(dt) {
   if (!state.raceStarted) return;
-  const accel = (state.keys["ArrowUp"] || state.keys["KeyW"]) ? 0.05 : 0;
-  const brake = (state.keys["ArrowDown"] || state.keys["KeyS"]) ? 0.08 : 0;
+  const accel = (state.keys["ArrowUp"] || state.keys["KeyW"]) ? 0.04 : 0;
+  const brake = (state.keys["ArrowDown"] || state.keys["KeyS"]) ? 0.06 : 0;
   const turnLeft = state.keys["ArrowLeft"] || state.keys["KeyA"];
   const turnRight = state.keys["ArrowRight"] || state.keys["KeyD"];
 
@@ -325,16 +325,16 @@ function update(dt) {
   state.speed *= 0.985;
 
   const segment = findSegment(state.position);
-  state.playerX -= segment.curve * 2.5 * state.speed;
-  if (turnLeft) state.playerX -= 0.05 * state.speed;
-  if (turnRight) state.playerX += 0.05 * state.speed;
+  state.playerX -= segment.curve * 0.003 * state.speed;
+  if (turnLeft) state.playerX -= 0.03 * state.speed;
+  if (turnRight) state.playerX += 0.03 * state.speed;
   state.playerX = Math.max(-1.1, Math.min(1.1, state.playerX));
 
   if (Math.abs(state.playerX) > 1) {
     state.speed *= 0.95;
   }
 
-  state.position += state.speed * road.segmentLength;
+  state.position += state.speed * dt * 60 * road.segmentLength;
   if (state.position >= trackLength) {
     state.position -= trackLength;
     state.lap += 1;
