@@ -46,5 +46,13 @@
     "description": "Direkter Sprung in den vorhandenen Platformer.",
     "tags": ["arcade"],
     "link": "https://cnr.kiliankellner.com"
+  },
+  {
+    "id": "rezepte",
+    "title": "Rezepte",
+    "status": "ready",
+    "description": "Deine Rezepte-App.",
+    "tags": ["gadgets"],
+    "link": "https://cook.tinkeroneo.de"
   }
 ]
