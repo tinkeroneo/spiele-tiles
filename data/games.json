@@ -2,8 +2,8 @@
   {
     "id": "muehle",
     "title": "Muehle",
-    "status": "prototype",
-    "description": "Grundlayout und Spielfeld - Logik folgt.",
+    "status": "ready",
+    "description": "Vollstaendige Muehle-Regeln mit Schlagen und Fliegen.",
     "tags": ["board"],
     "link": "games/muehle/index.html"
   },
