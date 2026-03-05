@@ -63,6 +63,15 @@
     "link": "https://cnr.kiliankellner.com"
   },
   {
+    "id": "2048",
+    "title": "2048",
+    "status": "ready",
+    "description": "2048 Puzzle.",
+    "tags": ["arcade"],
+    "icon": "🔢",
+    "link": "https://2048.kiliankellner.com"
+  },
+  {
     "id": "rezepte",
     "title": "Rezepte",
     "status": "ready",

@@ -4,7 +4,6 @@ const resetAllBtn = document.getElementById("resetAll");
 const profileSelect = document.getElementById("profileSelect");
 const profileName = document.getElementById("profileName");
 const profileSave = document.getElementById("profileSave");
-const profileLoad = document.getElementById("profileLoad");
 const profileDelete = document.getElementById("profileDelete");
 
 const inputs = {
@@ -418,7 +417,7 @@ profileSave.addEventListener("click", () => {
   profileSelect.value = name;
 });
 
-profileLoad.addEventListener("click", () => {
+profileSelect.addEventListener("change", () => {
   const name = profileSelect.value;
   if (!name) return;
   const profiles = loadProfiles();
