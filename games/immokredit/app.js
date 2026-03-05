@@ -1,6 +1,11 @@
 ﻿const tabs = Array.from(document.querySelectorAll(".tab"));
 const panels = Array.from(document.querySelectorAll(".panel"));
 const resetAllBtn = document.getElementById("resetAll");
+const profileSelect = document.getElementById("profileSelect");
+const profileName = document.getElementById("profileName");
+const profileSave = document.getElementById("profileSave");
+const profileLoad = document.getElementById("profileLoad");
+const profileDelete = document.getElementById("profileDelete");
 
 const inputs = {
   kaufbetrag: document.getElementById("kaufbetrag"),
@@ -55,6 +60,7 @@ const expenseTable = document.querySelector("#expenseTable tbody");
 const addExpenseBtn = document.getElementById("addExpense");
 
 const storeKey = "immokredit_state_v1";
+const profilesKey = "immokredit_profiles_v1";
 
 function fmtMoney(value) {
   return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(value || 0);
@@ -101,6 +107,43 @@ function loadState() {
   if (Array.isArray(data.expenses)) {
     expenses = data.expenses;
   }
+}
+
+function loadProfiles() {
+  const raw = localStorage.getItem(profilesKey);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveProfiles(profiles) {
+  localStorage.setItem(profilesKey, JSON.stringify(profiles));
+}
+
+function refreshProfileSelect() {
+  const profiles = loadProfiles();
+  profileSelect.innerHTML = "";
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = "";
+  defaultOpt.textContent = "Profil waehlen";
+  profileSelect.appendChild(defaultOpt);
+  Object.keys(profiles).sort().forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    profileSelect.appendChild(opt);
+  });
+}
+
+function applyProfile(data) {
+  if (!data) return;
+  if (data.inputs) {
+    Object.entries(data.inputs).forEach(([k, v]) => {
+      if (inputs[k]) inputs[k].value = v;
+    });
+  }
+  if (Array.isArray(data.expenses)) {
+    expenses = data.expenses;
+  }
+  recalcAll();
 }
 
 function calcNebenkosten() {
@@ -362,6 +405,35 @@ resetAllBtn.addEventListener("click", () => {
   window.location.reload();
 });
 
+profileSave.addEventListener("click", () => {
+  const name = profileName.value.trim();
+  if (!name) return;
+  const profiles = loadProfiles();
+  profiles[name] = {
+    inputs: Object.fromEntries(Object.entries(inputs).map(([k, el]) => [k, el.value])),
+    expenses
+  };
+  saveProfiles(profiles);
+  refreshProfileSelect();
+  profileSelect.value = name;
+});
+
+profileLoad.addEventListener("click", () => {
+  const name = profileSelect.value;
+  if (!name) return;
+  const profiles = loadProfiles();
+  applyProfile(profiles[name]);
+});
+
+profileDelete.addEventListener("click", () => {
+  const name = profileSelect.value;
+  if (!name) return;
+  const profiles = loadProfiles();
+  delete profiles[name];
+  saveProfiles(profiles);
+  refreshProfileSelect();
+});
+
 function setDefaultStartDate() {
   const now = new Date();
   const val = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
@@ -369,6 +441,7 @@ function setDefaultStartDate() {
 }
 
 loadState();
+refreshProfileSelect();
 setDefaultStartDate();
 initTabs();
 recalcAll();
