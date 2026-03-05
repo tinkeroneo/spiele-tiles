@@ -120,7 +120,7 @@
 
 .staff-track {
   position: relative;
-  height: 150px;
+  height: 170px;
   min-width: 480px;
 }
 
@@ -156,11 +156,32 @@
   filter: brightness(1.2);
 }
 
+.note-stem {
+  position: absolute;
+  width: 2px;
+  background: rgba(242,245,247,0.7);
+  border-radius: 2px;
+}
+
 .note-bar {
   position: absolute;
   height: 2px;
   background: rgba(255,255,255,0.15);
   border-radius: 999px;
+}
+
+.beatline,
+.barline {
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  width: 1px;
+  background: rgba(255,255,255,0.08);
+}
+
+.barline {
+  width: 2px;
+  background: rgba(255,255,255,0.2);
 }
 
 .playhead {
@@ -224,7 +245,7 @@
   .actions { width: 100%; justify-content: flex-start; }
   .board { height: 180px; }
   .key { height: 180px; }
-  .staff-track { height: 130px; }
+  .staff-track { height: 150px; }
   .library-row { flex-direction: column; align-items: stretch; }
   .library input[type="text"],
   .library select,

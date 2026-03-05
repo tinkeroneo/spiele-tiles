@@ -17,14 +17,19 @@ const octaveLabel = document.getElementById("octaveLabel");
 const tempoInput = document.getElementById("tempo");
 const tempoValue = document.getElementById("tempoValue");
 const metronomeToggle = document.getElementById("metronomeToggle");
+const sustainToggle = document.getElementById("sustainToggle");
 
 const baseWhiteKeys = ["C","D","E","F","G","A","B"];
 const baseBlackKeys = ["C#","D#","F#","G#","A#"];
 const blackOffsets = [0.7, 1.7, 3.7, 4.7, 5.7];
+const whiteKeyLabels = "ASDFGHJ";
+const blackKeyLabels = ["W", "E", "T", "Z", "U"];
+const blackKeyAltLabels = [null, null, null, "Y", null];
 
 let audioCtx = null;
 const active = new Map();
 const keyDown = new Map();
+const sustained = new Set();
 let events = [];
 let recording = false;
 let recordStart = 0;
@@ -80,25 +85,30 @@ function clearPlayback() {
 }
 
 function currentNotes() {
-  const white = baseWhiteKeys.map((n, idx) => ({ note: `${n}${currentOctave}`, key: "ASDFGHJ"[idx] }));
-  const black = baseBlackKeys.map((n, idx) => ({ note: `${n}${currentOctave}`, key: "WETYU"[idx], position: blackOffsets[idx] }));
+  const white = baseWhiteKeys.map((n, idx) => ({ note: `${n}${currentOctave}`, key: whiteKeyLabels[idx] }));
+  const black = baseBlackKeys.map((n, idx) => ({
+    note: `${n}${currentOctave}`,
+    key: blackKeyLabels[idx],
+    altKey: blackKeyAltLabels[idx],
+    position: blackOffsets[idx]
+  }));
   return { white, black };
 }
 
-function noteOrder() {
-  return [
-    `C${currentOctave}`, `C#${currentOctave}`, `D${currentOctave}`, `D#${currentOctave}`, `E${currentOctave}`,
-    `F${currentOctave}`, `F#${currentOctave}`, `G${currentOctave}`, `G#${currentOctave}`, `A${currentOctave}`,
-    `A#${currentOctave}`, `B${currentOctave}`
-  ];
+function noteIndex(note) {
+  const map = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  const match = note.match(/([A-G])(#?)(\d)/);
+  if (!match) return 0;
+  const base = map[match[1]] + (match[2] ? 1 : 0);
+  const octave = Number(match[3]);
+  return base + octave * 12;
 }
 
 function noteToY(note) {
-  const order = noteOrder();
-  const idx = order.indexOf(note);
   const base = 115;
-  const step = 8;
-  return base - idx * step;
+  const step = 4;
+  const relative = noteIndex(note) - noteIndex(`C${currentOctave}`);
+  return base - relative * step;
 }
 
 function updateMeta() {
@@ -128,6 +138,16 @@ function renderStaff() {
   const width = Math.max(480, Math.ceil(duration * pxPerMs));
   staffTrack.style.width = `${width}px`;
 
+  const beatMs = 60000 / tempo;
+  let beat = 0;
+  for (let t = 0; t <= duration; t += beatMs) {
+    const line = document.createElement("div");
+    line.className = beat % 4 === 0 ? "barline" : "beatline";
+    line.style.left = `${t * pxPerMs}px`;
+    staffTrack.appendChild(line);
+    beat += 1;
+  }
+
   events.forEach((event) => {
     const left = event.start * pxPerMs;
     const top = noteToY(event.note);
@@ -136,6 +156,14 @@ function renderStaff() {
     noteEl.style.left = `${left}px`;
     noteEl.style.top = `${top}px`;
     staffTrack.appendChild(noteEl);
+
+    const stem = document.createElement("div");
+    stem.className = "note-stem";
+    const up = noteIndex(event.note) < noteIndex(`G${currentOctave}`);
+    stem.style.left = `${left + 12}px`;
+    stem.style.top = up ? `${top - 26}px` : `${top + 2}px`;
+    stem.style.height = "26px";
+    staffTrack.appendChild(stem);
 
     const bar = document.createElement("div");
     bar.className = "note-bar";
@@ -265,6 +293,7 @@ function render() {
     key.className = "key black";
     key.dataset.note = item.note;
     key.dataset.key = item.key;
+    if (item.altKey) key.dataset.altKey = item.altKey;
     key.textContent = item.key;
     key.style.left = `calc(${item.position} * (100% / 7))`;
     keyboard.appendChild(key);
@@ -273,6 +302,10 @@ function render() {
 }
 
 function press(note, el) {
+  if (sustainToggle.checked && active.has(note)) {
+    stop(note);
+    sustained.delete(note);
+  }
   play(note);
   if (el) el.classList.add("active");
   if (recording && !keyDown.has(note)) {
@@ -281,7 +314,11 @@ function press(note, el) {
 }
 
 function release(note, el) {
-  stop(note);
+  if (sustainToggle.checked) {
+    sustained.add(note);
+  } else {
+    stop(note);
+  }
   if (el) el.classList.remove("active");
   if (recording && keyDown.has(note)) {
     const start = keyDown.get(note);
@@ -378,6 +415,7 @@ function stopMetronome() {
 function updateTempo(value) {
   tempo = Number(value);
   tempoValue.textContent = `${tempo} BPM`;
+  renderStaff();
   if (metronomeToggle.checked) startMetronome();
 }
 
@@ -387,9 +425,20 @@ function shiftOctave(delta) {
   renderStaff();
 }
 
+function releaseSustain() {
+  sustained.forEach(note => stop(note));
+  sustained.clear();
+}
+
+function releaseAllActive() {
+  active.forEach((_, note) => stop(note));
+  document.querySelectorAll(".key.active").forEach(el => el.classList.remove("active"));
+}
+
 keyboard.addEventListener("pointerdown", (e) => {
   const key = e.target.closest(".key");
   if (!key) return;
+  if (key.setPointerCapture) key.setPointerCapture(e.pointerId);
   press(key.dataset.note, key);
 });
 
@@ -399,11 +448,33 @@ keyboard.addEventListener("pointerup", (e) => {
   release(key.dataset.note, key);
 });
 
+keyboard.addEventListener("pointercancel", (e) => {
+  const key = e.target.closest(".key");
+  if (!key) return;
+  release(key.dataset.note, key);
+});
+
+keyboard.addEventListener("pointerleave", (e) => {
+  const key = e.target.closest(".key");
+  if (!key) return;
+  release(key.dataset.note, key);
+});
+
+document.addEventListener("pointerup", () => releaseAllActive());
+document.addEventListener("pointercancel", () => releaseAllActive());
+document.addEventListener("touchend", () => releaseAllActive(), { passive: true });
+document.addEventListener("touchcancel", () => releaseAllActive(), { passive: true });
+
 window.addEventListener("keydown", (e) => {
   const key = e.key.toUpperCase();
-  if (key === "Z") return shiftOctave(-1);
-  if (key === "X") return shiftOctave(1);
-  const el = keyboard.querySelector(`.key[data-key="${key}"]`);
+  if (key === " " || key === "SPACE") {
+    sustainToggle.checked = !sustainToggle.checked;
+    if (!sustainToggle.checked) releaseSustain();
+    return;
+  }
+  if (e.shiftKey && key === "Z") return shiftOctave(-1);
+  if (e.shiftKey && key === "X") return shiftOctave(1);
+  const el = keyboard.querySelector(`.key[data-key="${key}"]`) || keyboard.querySelector(`.key[data-alt-key="${key}"]`);
   if (!el) return;
   if (el.classList.contains("active")) return;
   press(el.dataset.note, el);
@@ -411,7 +482,7 @@ window.addEventListener("keydown", (e) => {
 
 window.addEventListener("keyup", (e) => {
   const key = e.key.toUpperCase();
-  const el = keyboard.querySelector(`.key[data-key="${key}"]`);
+  const el = keyboard.querySelector(`.key[data-key="${key}"]`) || keyboard.querySelector(`.key[data-alt-key="${key}"]`);
   if (!el) return;
   release(el.dataset.note, el);
 });
@@ -444,7 +515,15 @@ metronomeToggle.addEventListener("change", (e) => {
   else stopMetronome();
 });
 
+sustainToggle.addEventListener("change", (e) => {
+  if (!e.target.checked) releaseSustain();
+});
+
 window.addEventListener("beforeunload", stopMetronome);
+window.addEventListener("blur", releaseAllActive);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) releaseAllActive();
+});
 
 function init() {
   tempoInput.value = tempo;
