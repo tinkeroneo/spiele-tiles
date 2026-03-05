@@ -1,0 +1,42 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Schach</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div>
+        <h1>Schach</h1>
+        <p class="lead">Preview mit Basisregeln und KI-Gegner.</p>
+      </div>
+      <div class="actions">
+        <label class="ai-toggle">
+          <input id="aiToggle" type="checkbox" checked />
+          <span>KI spielt Schwarz</span>
+        </label>
+        <button id="reset" class="ghost">Neu starten</button>
+        <a class="back" href="../../index.html">Zum Hub</a>
+      </div>
+    </header>
+
+    <section class="hud">
+      <div class="hud-card">
+        <div class="label">Am Zug</div>
+        <div id="turn" class="value">-</div>
+      </div>
+      <div class="hud-card">
+        <div class="label">Status</div>
+        <div id="status" class="value">-</div>
+      </div>
+    </section>
+
+    <div class="board" id="board" aria-label="Schachbrett"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

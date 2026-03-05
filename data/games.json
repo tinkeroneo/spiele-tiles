@@ -10,8 +10,8 @@
   },
   {
     "id": "reaktion",
-    "title": "Reaktions-Tester",
-    "status": "prototype",
+    "title": "React",
+    "status": "coming",
     "description": "Ein schnelles Timing-Gadget zum Warmwerden.",
     "tags": ["gadgets"],
     "icon": "⚡",
@@ -19,7 +19,7 @@
   },
   {
     "id": "gehirn-jogging",
-    "title": "Gehirn-Jogging",
+    "title": "NoBrainer",
     "status": "prototype",
     "description": "Mehrere Übungen mit adaptivem Schwierigkeitsgrad.",
     "tags": ["experiment", "gadgets"],
@@ -55,7 +55,7 @@
   },
   {
     "id": "cat-platformer",
-    "title": "Cat-Platformer",
+    "title": "CatJump",
     "status": "ready",
     "description": "Direkter Sprung in den vorhandenen Platformer.",
     "tags": ["arcade"],
@@ -82,7 +82,7 @@
   },
   {
     "id": "immokredit",
-    "title": "ImmoKredit Tool",
+    "title": "ImmoKredit",
     "status": "prototype",
     "description": "Kredit, Nebenkosten, Amortisation, Geldanlage, Gehalt und Ausgaben.",
     "tags": ["tools"],
