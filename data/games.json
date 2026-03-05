@@ -8,6 +8,14 @@
     "link": "games/muehle/index.html"
   },
   {
+    "id": "reaktion",
+    "title": "Reaktions-Tester",
+    "status": "prototype",
+    "description": "Ein schnelles Timing-Gadget zum Warmwerden.",
+    "tags": ["gadgets"],
+    "link": "games/reaktion/index.html"
+  },
+  {
     "id": "schach",
     "title": "Schach Mini",
     "status": "coming",
@@ -16,19 +24,19 @@
     "link": ""
   },
   {
-    "id": "reaktion",
-    "title": "Reaktions-Tester",
-    "status": "coming",
-    "description": "Ein schnelles Timing-Gadget.",
-    "tags": ["gadgets"],
-    "link": ""
+    "id": "purrkour",
+    "title": "Purrkour",
+    "status": "ready",
+    "description": "Parkour mit Katzenflair.",
+    "tags": ["arcade"],
+    "link": "../purrkour/index.html"
   },
   {
     "id": "cat-platformer",
     "title": "Cat-Platformer",
-    "status": "coming",
-    "description": "Spaeter als eigener Slot im Hub.",
+    "status": "ready",
+    "description": "Direkter Sprung in den vorhandenen Platformer.",
     "tags": ["arcade"],
-    "link": ""
+    "link": "../cat-platformer/index.html"
   }
 ]
