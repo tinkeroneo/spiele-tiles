@@ -9,6 +9,9 @@ const countdownEl = document.getElementById("countdown");
 const soundToggle = document.getElementById("soundToggle");
 const fullscreenToggle = document.getElementById("fullscreenToggle");
 const touchButtons = Array.from(document.querySelectorAll(".touch-btn"));
+let viewWidth = canvas.width;
+let viewHeight = canvas.height;
+let dpr = window.devicePixelRatio || 1;
 
 const road = {
   segmentLength: 200,
@@ -76,11 +79,14 @@ function resizeCanvas() {
   const maxH = Math.max(360, window.innerHeight * 0.6);
   const width = Math.min(980, maxW);
   const height = Math.min(maxH, width * 0.62);
-  canvas.width = Math.round(width * window.devicePixelRatio);
-  canvas.height = Math.round(height * window.devicePixelRatio);
+  viewWidth = Math.round(width);
+  viewHeight = Math.round(height);
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
   canvas.style.width = `${Math.round(width)}px`;
   canvas.style.height = `${Math.round(height)}px`;
-  ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 function reset() {
@@ -184,12 +190,14 @@ function project(p, cameraX, cameraY, cameraZ) {
   const transX = p.world.x - cameraX;
   const transY = p.world.y - cameraY;
   const transZ = p.world.z - cameraZ;
+  if (transZ <= 0) return false;
 
   p.screen = p.screen || {};
   p.screen.scale = cameraDepth / transZ;
-  p.screen.x = Math.round((1 + p.screen.scale * transX / road.roadWidth) * canvas.width / 2);
-  p.screen.y = Math.round((1 - p.screen.scale * transY / road.roadWidth) * canvas.height / 2);
-  p.screen.w = Math.round(p.screen.scale * canvas.width * road.roadWidth / 2);
+  p.screen.x = Math.round((1 + p.screen.scale * transX / road.roadWidth) * viewWidth / 2);
+  p.screen.y = Math.round((1 - p.screen.scale * transY / road.roadWidth) * viewHeight / 2);
+  p.screen.w = Math.round(p.screen.scale * viewWidth * road.roadWidth / 2);
+  return true;
 }
 
 function drawSegment(p1, p2, color) {
@@ -205,13 +213,13 @@ function drawSegment(p1, p2, color) {
 
 function render() {
   ctx.fillStyle = colors.sky;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, viewWidth, viewHeight);
 
   const baseSegment = findSegment(state.position);
   const baseIndex = baseSegment.index;
   const basePercent = (state.position % road.segmentLength) / road.segmentLength;
 
-  let maxY = canvas.height;
+  let maxY = viewHeight;
   let dx = -baseSegment.curve * basePercent;
   let x = 0;
 
@@ -225,8 +233,9 @@ function render() {
     p1.world.x = x;
     p2.world.x = x + dx;
 
-    project(p1, state.playerX * road.roadWidth, road.cameraHeight, state.position - (segment.looped ? trackLength : 0));
-    project(p2, state.playerX * road.roadWidth, road.cameraHeight, state.position - (segment.looped ? trackLength : 0));
+    const camZ = state.position - (segment.looped ? trackLength : 0);
+    if (!project(p1, state.playerX * road.roadWidth, road.cameraHeight, camZ)) continue;
+    if (!project(p2, state.playerX * road.roadWidth, road.cameraHeight, camZ)) continue;
 
     x += dx;
     dx += segment.curve;
@@ -235,8 +244,8 @@ function render() {
 
     const grass = (Math.floor(segment.index / road.rumbleLength) % 2) ? "#0f1a12" : "#0c1510";
     drawSegment(
-      { x: canvas.width / 2, y: p2.screen.y, w: canvas.width },
-      { x: canvas.width / 2, y: p1.screen.y, w: canvas.width },
+      { x: viewWidth / 2, y: p2.screen.y, w: viewWidth },
+      { x: viewWidth / 2, y: p1.screen.y, w: viewWidth },
       grass
     );
 
@@ -276,8 +285,8 @@ function render() {
 function drawCar() {
   const carW = 50;
   const carH = 90;
-  const x = canvas.width / 2 + state.playerX * canvas.width * 0.25;
-  const y = canvas.height - 140;
+  const x = viewWidth / 2 + state.playerX * viewWidth * 0.25;
+  const y = viewHeight - 140;
 
   ctx.fillStyle = "#ffb347";
   ctx.fillRect(x - carW / 2, y - carH / 2, carW, carH);
