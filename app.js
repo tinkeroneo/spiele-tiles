@@ -90,7 +90,6 @@ function render() {
       ${badge}
       ${game.icon ? `<div class="tile-icon">${game.icon}</div>` : ""}
       <h3>${game.title}</h3>
-      <p>${game.description}</p>
       <div class="tags">${tags}</div>
     `;
 
