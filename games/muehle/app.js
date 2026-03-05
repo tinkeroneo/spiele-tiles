@@ -159,11 +159,11 @@ function setMessage(text) {
 
 function baseMessage() {
   if (state.gameOver) return state.message;
-  if (state.captureMode) return `Muehle! ${names[state.current]} schlaegt eine Figur von ${names[other(state.current)]}.`;
-  if (phase() === "Setzen") return "Setzen: Waehle ein freies Feld.";
-  if (state.selected !== null) return "Bewegen: Waehle das Ziel.";
+  if (state.captureMode) return `M?hle! ${names[state.current]} schl?gt eine Figur von ${names[other(state.current)]}.`;
+  if (phase() === "Setzen") return "Setzen: W?hle ein freies Feld.";
+  if (state.selected !== null) return "Bewegen: W?hle das Ziel.";
   const flying = piecesOnBoard(state.current).length === 3;
-  return flying ? "Fliegen erlaubt: Waehle eine Figur." : "Bewegen: Waehle eine Figur.";
+  return flying ? "Fliegen erlaubt: W?hle eine Figur." : "Bewegen: W?hle eine Figur.";
 }
 
 function updateHUD() {
@@ -257,7 +257,7 @@ function handlePlace(index) {
 
   if (isMillAt(index, state.current, state.board)) {
     state.captureMode = true;
-    setMessage(`Muehle! ${names[state.current]} schlaegt eine Figur.`);
+    setMessage(`M?hle! ${names[state.current]} schl?gt eine Figur.`);
   } else {
     switchTurn();
   }
@@ -288,7 +288,7 @@ function handleMove(index) {
 
   if (isMillAt(index, state.current, state.board)) {
     state.captureMode = true;
-    setMessage(`Muehle! ${names[state.current]} schlaegt eine Figur.`);
+    setMessage(`M?hle! ${names[state.current]} schl?gt eine Figur.`);
   } else {
     if (checkWin(other(state.current))) {
       state.gameOver = true;
