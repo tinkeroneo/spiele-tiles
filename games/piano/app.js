@@ -7,24 +7,20 @@ const clearBtn = document.getElementById("clearBtn");
 const staffTrack = document.getElementById("staffTrack");
 const playhead = document.getElementById("playhead");
 const recordMeta = document.getElementById("recordMeta");
+const recordNameInput = document.getElementById("recordName");
+const saveBtn = document.getElementById("saveBtn");
+const recordingsSelect = document.getElementById("recordingsSelect");
+const deleteBtn = document.getElementById("deleteBtn");
+const octaveDown = document.getElementById("octaveDown");
+const octaveUp = document.getElementById("octaveUp");
+const octaveLabel = document.getElementById("octaveLabel");
+const tempoInput = document.getElementById("tempo");
+const tempoValue = document.getElementById("tempoValue");
+const metronomeToggle = document.getElementById("metronomeToggle");
 
-const whiteKeys = [
-  { note: "C4", key: "A" },
-  { note: "D4", key: "S" },
-  { note: "E4", key: "D" },
-  { note: "F4", key: "F" },
-  { note: "G4", key: "G" },
-  { note: "A4", key: "H" },
-  { note: "B4", key: "J" }
-];
-
-const blackKeys = [
-  { note: "C#4", key: "W", position: 0.7 },
-  { note: "D#4", key: "E", position: 1.7 },
-  { note: "F#4", key: "T", position: 3.7 },
-  { note: "G#4", key: "Y", position: 4.7 },
-  { note: "A#4", key: "U", position: 5.7 }
-];
+const baseWhiteKeys = ["C","D","E","F","G","A","B"];
+const baseBlackKeys = ["C#","D#","F#","G#","A#"];
+const blackOffsets = [0.7, 1.7, 3.7, 4.7, 5.7];
 
 let audioCtx = null;
 const active = new Map();
@@ -36,7 +32,11 @@ let playing = false;
 let playStart = 0;
 let playbackTimeouts = [];
 const pxPerMs = 0.08;
-const noteOrder = ["C4","C#4","D4","D#4","E4","F4","F#4","G4","G#4","A4","A#4","B4"];
+let currentOctave = 4;
+let tempo = 100;
+let metronomeTimer = null;
+let recordings = [];
+const storageKey = "piano-recordings-v1";
 
 function ensureAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -52,14 +52,14 @@ function frequency(note) {
   return 440 * Math.pow(2, n / 12);
 }
 
-function play(note) {
+function play(note, velocity = 0.2, type = "sine") {
   if (!soundToggle.checked) return;
   ensureAudio();
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.type = "sine";
+  osc.type = type;
   osc.frequency.value = frequency(note);
-  gain.gain.value = 0.2;
+  gain.gain.value = velocity;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   osc.start();
@@ -79,8 +79,23 @@ function clearPlayback() {
   playbackTimeouts = [];
 }
 
+function currentNotes() {
+  const white = baseWhiteKeys.map((n, idx) => ({ note: `${n}${currentOctave}`, key: "ASDFGHJ"[idx] }));
+  const black = baseBlackKeys.map((n, idx) => ({ note: `${n}${currentOctave}`, key: "WETYU"[idx], position: blackOffsets[idx] }));
+  return { white, black };
+}
+
+function noteOrder() {
+  return [
+    `C${currentOctave}`, `C#${currentOctave}`, `D${currentOctave}`, `D#${currentOctave}`, `E${currentOctave}`,
+    `F${currentOctave}`, `F#${currentOctave}`, `G${currentOctave}`, `G#${currentOctave}`, `A${currentOctave}`,
+    `A#${currentOctave}`, `B${currentOctave}`
+  ];
+}
+
 function noteToY(note) {
-  const idx = noteOrder.indexOf(note);
+  const order = noteOrder();
+  const idx = order.indexOf(note);
   const base = 115;
   const step = 8;
   return base - idx * step;
@@ -143,6 +158,7 @@ function startRecording() {
   stopBtn.disabled = false;
   playBtn.disabled = true;
   clearBtn.disabled = true;
+  saveBtn.disabled = true;
   renderStaff();
   recordMeta.textContent = "Aufnahme läuft...";
 }
@@ -160,6 +176,7 @@ function stopRecording() {
   stopBtn.disabled = true;
   playBtn.disabled = events.length === 0;
   clearBtn.disabled = events.length === 0;
+  saveBtn.disabled = events.length === 0;
   renderStaff();
 }
 
@@ -174,6 +191,7 @@ function startPlayback() {
   recordBtn.disabled = true;
   playBtn.disabled = true;
   clearBtn.disabled = true;
+  saveBtn.disabled = true;
   clearPlayback();
 
   const duration = Math.max(...events.map(e => e.start + e.duration));
@@ -218,6 +236,7 @@ function stopPlayback() {
   recordBtn.disabled = false;
   playBtn.disabled = events.length === 0;
   clearBtn.disabled = events.length === 0;
+  saveBtn.disabled = events.length === 0;
 }
 
 function clearRecording() {
@@ -225,12 +244,14 @@ function clearRecording() {
   keyDown.clear();
   playBtn.disabled = true;
   clearBtn.disabled = true;
+  saveBtn.disabled = true;
   renderStaff();
 }
 
 function render() {
+  const { white, black } = currentNotes();
   keyboard.innerHTML = "";
-  whiteKeys.forEach((item) => {
+  white.forEach((item) => {
     const key = document.createElement("div");
     key.className = "key";
     key.dataset.note = item.note;
@@ -239,7 +260,7 @@ function render() {
     keyboard.appendChild(key);
   });
 
-  blackKeys.forEach(item => {
+  black.forEach(item => {
     const key = document.createElement("div");
     key.className = "key black";
     key.dataset.note = item.note;
@@ -248,6 +269,7 @@ function render() {
     key.style.left = `calc(${item.position} * (100% / 7))`;
     keyboard.appendChild(key);
   });
+  octaveLabel.textContent = currentOctave;
 }
 
 function press(note, el) {
@@ -270,6 +292,101 @@ function release(note, el) {
   }
 }
 
+function saveRecording() {
+  if (!events.length) return;
+  const name = recordNameInput.value.trim() || `Aufnahme ${recordings.length + 1}`;
+  const record = {
+    id: `rec-${Date.now()}`,
+    name,
+    createdAt: Date.now(),
+    octave: currentOctave,
+    tempo,
+    events
+  };
+  recordings.unshift(record);
+  recordNameInput.value = "";
+  persistRecordings();
+  renderRecordings();
+  recordingsSelect.value = record.id;
+  deleteBtn.disabled = false;
+}
+
+function loadRecording(id) {
+  const record = recordings.find(r => r.id === id);
+  if (!record) return;
+  currentOctave = record.octave ?? 4;
+  tempo = record.tempo ?? 100;
+  tempoInput.value = tempo;
+  tempoValue.textContent = `${tempo} BPM`;
+  events = record.events.map(e => ({ ...e }));
+  render();
+  renderStaff();
+  playBtn.disabled = events.length === 0;
+  clearBtn.disabled = events.length === 0;
+  saveBtn.disabled = events.length === 0;
+}
+
+function deleteRecording(id) {
+  const idx = recordings.findIndex(r => r.id === id);
+  if (idx === -1) return;
+  recordings.splice(idx, 1);
+  persistRecordings();
+  renderRecordings();
+}
+
+function persistRecordings() {
+  localStorage.setItem(storageKey, JSON.stringify(recordings));
+}
+
+function renderRecordings() {
+  recordingsSelect.innerHTML = "<option value=\"\">Gespeicherte Aufnahmen</option>";
+  recordings.forEach(record => {
+    const option = document.createElement("option");
+    option.value = record.id;
+    option.textContent = `${record.name} · ${new Date(record.createdAt).toLocaleDateString()}`;
+    recordingsSelect.appendChild(option);
+  });
+  deleteBtn.disabled = !recordingsSelect.value;
+}
+
+function loadRecordingsFromStorage() {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    recordings = raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    recordings = [];
+  }
+  renderRecordings();
+}
+
+function metronomeTick() {
+  play("A4", 0.08, "square");
+  setTimeout(() => stop("A4"), 80);
+}
+
+function startMetronome() {
+  if (metronomeTimer) clearInterval(metronomeTimer);
+  const interval = 60000 / tempo;
+  metronomeTimer = setInterval(metronomeTick, interval);
+}
+
+function stopMetronome() {
+  if (metronomeTimer) clearInterval(metronomeTimer);
+  metronomeTimer = null;
+}
+
+function updateTempo(value) {
+  tempo = Number(value);
+  tempoValue.textContent = `${tempo} BPM`;
+  if (metronomeToggle.checked) startMetronome();
+}
+
+function shiftOctave(delta) {
+  currentOctave = Math.min(6, Math.max(2, currentOctave + delta));
+  render();
+  renderStaff();
+}
+
 keyboard.addEventListener("pointerdown", (e) => {
   const key = e.target.closest(".key");
   if (!key) return;
@@ -284,6 +401,8 @@ keyboard.addEventListener("pointerup", (e) => {
 
 window.addEventListener("keydown", (e) => {
   const key = e.key.toUpperCase();
+  if (key === "Z") return shiftOctave(-1);
+  if (key === "X") return shiftOctave(1);
   const el = keyboard.querySelector(`.key[data-key="${key}"]`);
   if (!el) return;
   if (el.classList.contains("active")) return;
@@ -301,6 +420,38 @@ recordBtn.addEventListener("click", startRecording);
 stopBtn.addEventListener("click", stopRecording);
 playBtn.addEventListener("click", startPlayback);
 clearBtn.addEventListener("click", clearRecording);
+saveBtn.addEventListener("click", saveRecording);
+recordingsSelect.addEventListener("change", (e) => {
+  const id = e.target.value;
+  deleteBtn.disabled = !id;
+  if (id) loadRecording(id);
+});
 
-render();
-renderStaff();
+deleteBtn.addEventListener("click", () => {
+  const id = recordingsSelect.value;
+  if (!id) return;
+  deleteRecording(id);
+  recordingsSelect.value = "";
+  deleteBtn.disabled = true;
+});
+
+octaveDown.addEventListener("click", () => shiftOctave(-1));
+octaveUp.addEventListener("click", () => shiftOctave(1));
+
+tempoInput.addEventListener("input", (e) => updateTempo(e.target.value));
+metronomeToggle.addEventListener("change", (e) => {
+  if (e.target.checked) startMetronome();
+  else stopMetronome();
+});
+
+window.addEventListener("beforeunload", stopMetronome);
+
+function init() {
+  tempoInput.value = tempo;
+  tempoValue.textContent = `${tempo} BPM`;
+  render();
+  renderStaff();
+  loadRecordingsFromStorage();
+}
+
+init();

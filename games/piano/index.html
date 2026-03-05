@@ -20,6 +20,23 @@
           <button id="playBtn" class="btn" disabled>Abspielen</button>
           <button id="clearBtn" class="btn ghost" disabled>Leeren</button>
         </div>
+        <div class="controls">
+          <div class="chip">
+            <span class="chip-label">Oktave</span>
+            <button id="octaveDown" class="btn mini" aria-label="Oktave runter">-</button>
+            <span id="octaveLabel" class="chip-value">4</span>
+            <button id="octaveUp" class="btn mini" aria-label="Oktave hoch">+</button>
+          </div>
+          <div class="chip">
+            <label class="chip-label" for="tempo">Tempo</label>
+            <input id="tempo" type="range" min="40" max="200" value="100" />
+            <span id="tempoValue" class="chip-value">100 BPM</span>
+          </div>
+          <label class="toggle chip">
+            <input id="metronomeToggle" type="checkbox" />
+            <span>Metronom</span>
+          </label>
+        </div>
         <label class="toggle">
           <input id="soundToggle" type="checkbox" checked />
           <span>Sound an</span>
@@ -44,6 +61,18 @@
         </div>
       </div>
       <div class="staff-hint">Aufnahme starten, dann spielen. Abspielen spielt die Aufnahme.</div>
+    </section>
+
+    <section class="library">
+      <div class="library-row">
+        <input id="recordName" type="text" placeholder="Aufnahme-Name (optional)" />
+        <button id="saveBtn" class="btn">Speichern</button>
+        <select id="recordingsSelect">
+          <option value="">Gespeicherte Aufnahmen</option>
+        </select>
+        <button id="deleteBtn" class="btn ghost" disabled>Löschen</button>
+      </div>
+      <div class="library-hint">Auswahl lädt automatisch. Gespeichert werden Noten & Timing.</div>
     </section>
 
     <section class="board" id="keyboard" aria-label="Piano"></section>
