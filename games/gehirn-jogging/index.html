@@ -36,6 +36,10 @@
         <div class="label">Tempo</div>
         <div id="tempo" class="value">-</div>
       </div>
+      <div class="stat">
+        <div class="label">Restzeit</div>
+        <div id="timeLeft" class="value">-</div>
+      </div>
     </section>
 
     <section class="picker">
@@ -51,6 +55,17 @@
             <option value="mix" selected>Mix (random)</option>
           </select>
         </label>
+        <label>
+          <span>Zeitdruck</span>
+          <select id="timePressure">
+            <option value="off" selected>Aus</option>
+            <option value="on">An</option>
+          </select>
+        </label>
+        <label>
+          <span>Sekunden</span>
+          <input id="timeSeconds" type="number" min="2" max="30" value="8" />
+        </label>
       </div>
       <button id="start" class="primary">Start</button>
     </section>
@@ -61,6 +76,14 @@
     </section>
 
     <div id="feedback" class="feedback">-</div>
+
+    <section class="history">
+      <div class="history-head">
+        <h2>Historie</h2>
+        <div id="historyLabel" class="history-label">-</div>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </section>
   </main>
 
   <script src="app.js"></script>
