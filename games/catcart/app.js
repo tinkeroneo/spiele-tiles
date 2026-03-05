@@ -9,27 +9,29 @@ const countdownEl = document.getElementById("countdown");
 const soundToggle = document.getElementById("soundToggle");
 const fullscreenToggle = document.getElementById("fullscreenToggle");
 const touchButtons = Array.from(document.querySelectorAll(".touch-btn"));
+
 let viewWidth = canvas.width;
 let viewHeight = canvas.height;
 let dpr = window.devicePixelRatio || 1;
 
 const road = {
-  segmentLength: 200,
-  roadWidth: 2000,
+  segmentLength: 12,
+  roadWidth: 1.2,
   rumbleLength: 3,
   lanes: 2,
-  cameraHeight: 1000,
-  drawDistance: 200,
-  fieldOfView: 100
+  cameraHeight: 1.1,
+  drawDistance: 220,
+  fieldOfView: 90
 };
 
 const colors = {
   sky: "#0a0f14",
-  grass: "#0f1a12",
+  grass1: "#0f1a12",
+  grass2: "#0c1510",
+  rumble1: "#2b3947",
+  rumble2: "#202a36",
   road: "#1a232c",
-  rumble: "#2b3947",
-  lane: "#c2ccd4",
-  checkpoint: "#58e07d"
+  lane: "#c2ccd4"
 };
 
 const state = {
@@ -153,7 +155,7 @@ function addSegment(curve = 0, y = 0) {
 
 function addRoad(enter, hold, leave, curve, hill) {
   const startY = segments.length ? segments[segments.length - 1].p2.world.y : 0;
-  const endY = startY + hill * road.segmentLength;
+  const endY = startY + hill;
   const total = enter + hold + leave;
 
   for (let i = 0; i < enter; i += 1) {
@@ -169,14 +171,13 @@ function addRoad(enter, hold, leave, curve, hill) {
 
 function buildTrack() {
   segments = [];
-  addRoad(20, 60, 20, 0, 0);
-  addRoad(20, 40, 20, 0.8, 0);
-  addRoad(20, 60, 20, -0.6, 0.3);
-  addRoad(20, 40, 20, 1.0, -0.2);
-  addRoad(20, 80, 20, 0, 0.5);
-  addRoad(20, 60, 20, -0.8, -0.3);
-  addRoad(20, 60, 20, 0.4, 0);
-  addRoad(20, 80, 20, 0, -0.4);
+  addRoad(20, 80, 20, 0, 0);
+  addRoad(20, 50, 20, 0.002, 0.08);
+  addRoad(20, 60, 20, -0.002, -0.06);
+  addRoad(20, 40, 20, 0.003, 0.1);
+  addRoad(20, 70, 20, -0.0025, -0.08);
+  addRoad(20, 60, 20, 0.0015, 0.05);
+  addRoad(20, 90, 20, 0, -0.04);
 
   trackLength = segments.length * road.segmentLength;
 }
@@ -190,12 +191,12 @@ function project(p, cameraX, cameraY, cameraZ) {
   const transX = p.world.x - cameraX;
   const transY = p.world.y - cameraY;
   const transZ = p.world.z - cameraZ;
-  if (transZ <= 0) return false;
+  if (transZ <= 0.001) return false;
 
   p.screen = p.screen || {};
   p.screen.scale = cameraDepth / transZ;
-  p.screen.x = Math.round((1 + p.screen.scale * transX / road.roadWidth) * viewWidth / 2);
-  p.screen.y = Math.round((1 - p.screen.scale * transY / road.roadWidth) * viewHeight / 2);
+  p.screen.x = Math.round((1 + p.screen.scale * transX) * viewWidth / 2);
+  p.screen.y = Math.round((1 - p.screen.scale * transY) * viewHeight / 2);
   p.screen.w = Math.round(p.screen.scale * viewWidth * road.roadWidth / 2);
   return true;
 }
@@ -234,22 +235,22 @@ function render() {
     p2.world.x = x + dx;
 
     const camZ = state.position - (segment.looped ? trackLength : 0);
-    if (!project(p1, state.playerX * road.roadWidth, road.cameraHeight, camZ)) continue;
-    if (!project(p2, state.playerX * road.roadWidth, road.cameraHeight, camZ)) continue;
+    if (!project(p1, state.playerX, road.cameraHeight, camZ)) continue;
+    if (!project(p2, state.playerX, road.cameraHeight, camZ)) continue;
 
     x += dx;
     dx += segment.curve;
 
     if (p1.screen.y >= maxY) continue;
 
-    const grass = (Math.floor(segment.index / road.rumbleLength) % 2) ? "#0f1a12" : "#0c1510";
+    const grass = (Math.floor(segment.index / road.rumbleLength) % 2) ? colors.grass1 : colors.grass2;
     drawSegment(
       { x: viewWidth / 2, y: p2.screen.y, w: viewWidth },
       { x: viewWidth / 2, y: p1.screen.y, w: viewWidth },
       grass
     );
 
-    const rumble = (Math.floor(segment.index / road.rumbleLength) % 2) ? "#2b3947" : "#202a36";
+    const rumble = (Math.floor(segment.index / road.rumbleLength) % 2) ? colors.rumble1 : colors.rumble2;
     drawSegment(
       { x: p2.screen.x, y: p2.screen.y, w: p2.screen.w * 1.15 },
       { x: p1.screen.x, y: p1.screen.y, w: p1.screen.w * 1.15 },
@@ -262,13 +263,12 @@ function render() {
       colors.road
     );
 
-    const laneW = p2.screen.w * (2 / road.lanes) / road.lanes;
     if (road.lanes > 1) {
       for (let lane = 1; lane < road.lanes; lane += 1) {
         const laneX1 = p1.screen.x - p1.screen.w + (p1.screen.w * 2 * lane / road.lanes);
         const laneX2 = p2.screen.x - p2.screen.w + (p2.screen.w * 2 * lane / road.lanes);
         ctx.strokeStyle = colors.lane;
-        ctx.lineWidth = Math.max(1, p2.screen.w / 120);
+        ctx.lineWidth = Math.max(1, p2.screen.w / 140);
         ctx.beginPath();
         ctx.moveTo(laneX1, p1.screen.y);
         ctx.lineTo(laneX2, p2.screen.y);
@@ -285,7 +285,7 @@ function render() {
 function drawCar() {
   const carW = 50;
   const carH = 90;
-  const x = viewWidth / 2 + state.playerX * viewWidth * 0.25;
+  const x = viewWidth / 2 + state.playerX * viewWidth * 0.28;
   const y = viewHeight - 140;
 
   ctx.fillStyle = "#ffb347";
@@ -300,27 +300,27 @@ function drawCar() {
 
 function update(dt) {
   if (!state.raceStarted) return;
-  const accel = (state.keys["ArrowUp"] || state.keys["KeyW"]) ? 0.04 : 0;
-  const brake = (state.keys["ArrowDown"] || state.keys["KeyS"]) ? 0.06 : 0;
+  const accel = (state.keys["ArrowUp"] || state.keys["KeyW"]) ? 0.05 : 0;
+  const brake = (state.keys["ArrowDown"] || state.keys["KeyS"]) ? 0.08 : 0;
   const turnLeft = state.keys["ArrowLeft"] || state.keys["KeyA"];
   const turnRight = state.keys["ArrowRight"] || state.keys["KeyD"];
 
   const maxSpeed = 2.6;
   state.speed += accel - brake;
   state.speed = Math.max(0, Math.min(maxSpeed, state.speed));
-  state.speed *= 0.99;
+  state.speed *= 0.985;
 
   const segment = findSegment(state.position);
-  state.playerX -= segment.curve * 0.003 * state.speed;
-  if (turnLeft) state.playerX -= 0.03 * state.speed;
-  if (turnRight) state.playerX += 0.03 * state.speed;
-  state.playerX = Math.max(-1.2, Math.min(1.2, state.playerX));
+  state.playerX -= segment.curve * 2.5 * state.speed;
+  if (turnLeft) state.playerX -= 0.05 * state.speed;
+  if (turnRight) state.playerX += 0.05 * state.speed;
+  state.playerX = Math.max(-1.1, Math.min(1.1, state.playerX));
 
   if (Math.abs(state.playerX) > 1) {
-    state.speed *= 0.96;
+    state.speed *= 0.95;
   }
 
-  state.position += state.speed * dt * 60;
+  state.position += state.speed * road.segmentLength;
   if (state.position >= trackLength) {
     state.position -= trackLength;
     state.lap += 1;
