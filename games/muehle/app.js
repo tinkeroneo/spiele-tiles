@@ -7,6 +7,7 @@ const statusEl = document.getElementById("status");
 const resetBtn = document.getElementById("reset");
 const undoBtn = document.getElementById("undo");
 const aiToggle = document.getElementById("aiToggle");
+const aiLevel = document.getElementById("aiLevel");
 const aiMoveBtn = document.getElementById("aiMove");
 
 const positions = [
@@ -384,11 +385,74 @@ function findThreats(player, board) {
   return threats;
 }
 
-function chooseCapture(opponent) {
+function randomFrom(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function countMills(player, board) {
+  let total = 0;
+  mills.forEach(group => {
+    if (group.every(pos => board[pos] === player)) total += 1;
+  });
+  return total;
+}
+
+function countTwoInRow(player, board) {
+  let total = 0;
+  mills.forEach(group => {
+    const pieces = group.filter(pos => board[pos] === player).length;
+    const empties = group.filter(pos => board[pos] === null).length;
+    if (pieces === 2 && empties === 1) total += 1;
+  });
+  return total;
+}
+
+function mobility(player, board) {
+  if (phase() === "Setzen") return 0;
+  const pieces = piecesOnBoard(player, board);
+  return pieces.reduce((acc, pos) => acc + legalMovesFrom(pos, player, board).length, 0);
+}
+
+function evaluateBoard(player, board) {
+  const opp = other(player);
+  const score =
+    countMills(player, board) * 50 +
+    countTwoInRow(player, board) * 8 +
+    mobility(player, board) * 2 +
+    piecesOnBoard(player, board).length * 3;
+  const oppScore =
+    countMills(opp, board) * 50 +
+    countTwoInRow(opp, board) * 8 +
+    mobility(opp, board) * 2 +
+    piecesOnBoard(opp, board).length * 3;
+  return score - oppScore;
+}
+
+function getLevel() {
+  return aiLevel ? aiLevel.value : "normal";
+}
+
+function chooseCapture(opponent, level) {
   const candidates = state.board
     .map((value, index) => ({ value, index }))
     .filter(item => item.value === opponent && isCapturable(item.index, opponent));
   if (!candidates.length) return null;
+  if (level === "easy") return randomFrom(candidates).index;
+  if (level === "hard") {
+    let best = candidates[0];
+    let bestScore = -Infinity;
+    candidates.forEach(item => {
+      const boardCopy = [...state.board];
+      boardCopy[item.index] = null;
+      const score = evaluateBoard(aiPlayer, boardCopy);
+      if (score > bestScore) {
+        best = item;
+        bestScore = score;
+      }
+    });
+    return best.index;
+  }
+
   let best = candidates[0];
   let bestScore = -1;
   candidates.forEach(item => {
@@ -403,9 +467,25 @@ function chooseCapture(opponent) {
   return best.index;
 }
 
-function choosePlacement(player) {
+function choosePlacement(player, level) {
   const empty = state.board.map((value, i) => (value ? null : i)).filter(i => i !== null);
   const opponent = other(player);
+  if (level === "easy") return randomFrom(empty);
+
+  if (level === "hard") {
+    let best = empty[0];
+    let bestScore = -Infinity;
+    empty.forEach(pos => {
+      const boardCopy = [...state.board];
+      boardCopy[pos] = player;
+      const score = evaluateBoard(player, boardCopy);
+      if (score > bestScore) {
+        bestScore = score;
+        best = pos;
+      }
+    });
+    return best;
+  }
 
   for (const pos of empty) {
     const boardCopy = [...state.board];
@@ -416,15 +496,15 @@ function choosePlacement(player) {
   const threats = findThreats(opponent, state.board);
   if (threats.size) return Array.from(threats)[0];
 
-  return empty[Math.floor(Math.random() * empty.length)];
+  return randomFrom(empty);
 }
 
-function chooseMove(player) {
+function chooseMove(player, level) {
   const opponent = other(player);
   const threats = findThreats(opponent, state.board);
   const pieces = piecesOnBoard(player);
   let best = null;
-  let bestScore = -1;
+  let bestScore = -Infinity;
 
   pieces.forEach(from => {
     const moves = legalMovesFrom(from, player);
@@ -433,8 +513,16 @@ function chooseMove(player) {
       boardCopy[from] = null;
       boardCopy[to] = player;
       let score = 0;
-      if (isMillAt(to, player, boardCopy)) score += 3;
-      if (threats.has(to)) score += 2;
+      if (level === "easy") {
+        if (!best) best = { from, to };
+        return;
+      }
+      if (level === "hard") {
+        score = evaluateBoard(player, boardCopy);
+      } else {
+        if (isMillAt(to, player, boardCopy)) score += 3;
+        if (threats.has(to)) score += 2;
+      }
       if (score > bestScore) {
         bestScore = score;
         best = { from, to };
@@ -443,6 +531,13 @@ function chooseMove(player) {
   });
 
   if (!best) return null;
+  if (level === "easy") {
+    const moves = [];
+    pieces.forEach(from => {
+      legalMovesFrom(from, player).forEach(to => moves.push({ from, to }));
+    });
+    return moves.length ? randomFrom(moves) : null;
+  }
   return best;
 }
 
@@ -450,19 +545,21 @@ function runAiTurn() {
   if (state.gameOver) return;
   if (state.current !== aiPlayer) return;
 
+  const level = getLevel();
+
   if (state.captureMode) {
-    const target = chooseCapture(other(aiPlayer));
+    const target = chooseCapture(other(aiPlayer), level);
     if (target !== null) handleCapture(target);
     return;
   }
 
   if (phase() === "Setzen") {
-    const pos = choosePlacement(aiPlayer);
+    const pos = choosePlacement(aiPlayer, level);
     if (pos !== null) handlePlace(pos);
     return;
   }
 
-  const move = chooseMove(aiPlayer);
+  const move = chooseMove(aiPlayer, level);
   if (move) {
     state.selected = move.from;
     handleMove(move.to);
