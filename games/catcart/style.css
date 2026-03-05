@@ -56,6 +56,7 @@
   border: 1px solid #263240;
   border-radius: 20px;
   padding: 16px;
+  position: relative;
 }
 
 #game {
@@ -64,6 +65,47 @@
   display: block;
   border-radius: 14px;
   background: #0b1015;
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 700;
+  color: #ffb347;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.countdown.show {
+  opacity: 1;
+}
+
+.touch-controls {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.touch-row {
+  display: flex;
+  gap: 10px;
+}
+
+.touch-btn {
+  border: 1px solid #2b3947;
+  background: rgba(19, 26, 34, 0.9);
+  color: #f2f5f7;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 12px;
 }
 
 .hint {
@@ -76,4 +118,5 @@
   .head { flex-direction: column; align-items: flex-start; }
   .actions { width: 100%; }
   .actions button, .actions a { flex: 1; text-align: center; }
+  .touch-controls { display: flex; }
 }

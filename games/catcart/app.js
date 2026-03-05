@@ -5,6 +5,9 @@ const timeEl = document.getElementById("time");
 const bestEl = document.getElementById("best");
 const speedEl = document.getElementById("speed");
 const resetBtn = document.getElementById("reset");
+const countdownEl = document.getElementById("countdown");
+const soundToggle = document.getElementById("soundToggle");
+const touchButtons = Array.from(document.querySelectorAll(".touch-btn"));
 
 const track = {
   outer: { x: 40, y: 40, w: 700, h: 440 },
@@ -46,20 +49,52 @@ const state = {
   bestGhost: [],
   ghostIndex: 0,
   currentPath: [],
-  boostUntil: 0
+  boostUntil: 0,
+  raceStarted: false,
+  countdownTimer: null,
+  audioOn: false
 };
+
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function playBeep(freq, duration = 0.12, volume = 0.08) {
+  if (!state.audioOn) return;
+  ensureAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.value = freq;
+  osc.type = "sine";
+  gain.gain.value = volume;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function playBoost() { playBeep(660, 0.08, 0.12); }
+function playLap() { playBeep(520, 0.16, 0.1); }
+function playTick() { playBeep(300, 0.08, 0.08); }
+function playGo() { playBeep(880, 0.18, 0.12); }
 
 function reset() {
   state.kart = { x: 360, y: 100, angle: Math.PI / 2, speed: 0 };
   state.lap = 0;
-  state.startTime = performance.now();
+  state.startTime = null;
   state.lastTime = null;
   state.hitCheckpoints = new Set();
   state.startCrossed = false;
   state.currentPath = [];
   state.ghostIndex = 0;
   state.boostUntil = 0;
+  state.raceStarted = false;
   updateHud();
+  startCountdown();
 }
 
 function updateHud() {
@@ -69,6 +104,32 @@ function updateHud() {
   timeEl.textContent = `${timeSec.toFixed(1)} s`;
   bestEl.textContent = state.bestLap ? `${state.bestLap.toFixed(2)} s` : "-";
   speedEl.textContent = Math.round(state.kart.speed * 60);
+}
+
+function startCountdown() {
+  clearInterval(state.countdownTimer);
+  let count = 3;
+  countdownEl.textContent = String(count);
+  countdownEl.classList.add("show");
+  playTick();
+
+  state.countdownTimer = setInterval(() => {
+    count -= 1;
+    if (count > 0) {
+      countdownEl.textContent = String(count);
+      playTick();
+      return;
+    }
+    countdownEl.textContent = "GO";
+    playGo();
+    clearInterval(state.countdownTimer);
+    setTimeout(() => {
+      countdownEl.classList.remove("show");
+      state.raceStarted = true;
+      state.startTime = performance.now();
+      state.currentPath = [];
+    }, 400);
+  }, 800);
 }
 
 function insideRect(x, y, rect) {
@@ -92,6 +153,7 @@ function onTrack(x, y) {
 }
 
 function updateKart(dt) {
+  if (!state.raceStarted) return;
   const k = state.kart;
   const accel = state.keys["ArrowUp"] || state.keys["KeyW"] ? 0.02 : 0;
   const brake = state.keys["ArrowDown"] || state.keys["KeyS"] ? 0.03 : 0;
@@ -137,11 +199,13 @@ function checkBoostPads() {
     if (insideRect(k.x, k.y, pad) && now - pad.lastHit > 800) {
       pad.lastHit = now;
       state.boostUntil = now + 900;
+      playBoost();
     }
   });
 }
 
 function checkLap() {
+  if (!state.raceStarted) return;
   const k = state.kart;
   const onLine = k.x > startLine.x && k.x < startLine.x + startLine.w && k.y > startLine.y && k.y < startLine.y + startLine.h;
 
@@ -166,12 +230,13 @@ function checkLap() {
     }
     state.currentPath = [];
     state.ghostIndex = 0;
+    playLap();
   }
 }
 
 function recordPath(now) {
+  if (!state.raceStarted || !state.startTime) return;
   const k = state.kart;
-  if (!state.startTime) return;
   const t = (now - state.startTime) / 1000;
   state.currentPath.push({ x: k.x, y: k.y, t });
   if (state.currentPath.length > 2000) state.currentPath.shift();
@@ -236,7 +301,7 @@ function drawKart(k, ghost = false) {
 }
 
 function drawGhost(now) {
-  if (!state.bestGhost.length) return;
+  if (!state.bestGhost.length || !state.raceStarted) return;
   const lapTime = (now - state.startTime) / 1000;
   while (state.ghostIndex < state.bestGhost.length - 1 && state.bestGhost[state.ghostIndex].t < lapTime) {
     state.ghostIndex += 1;
@@ -267,6 +332,25 @@ window.addEventListener("keydown", (e) => {
 
 window.addEventListener("keyup", (e) => {
   state.keys[e.code] = false;
+});
+
+touchButtons.forEach(btn => {
+  const key = btn.dataset.key;
+  btn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    state.keys[key] = true;
+  });
+  btn.addEventListener("pointerup", () => { state.keys[key] = false; });
+  btn.addEventListener("pointerleave", () => { state.keys[key] = false; });
+});
+
+soundToggle.addEventListener("click", () => {
+  state.audioOn = !state.audioOn;
+  if (state.audioOn) {
+    ensureAudio();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  }
+  soundToggle.textContent = state.audioOn ? "Sound: An" : "Sound: Aus";
 });
 
 resetBtn.addEventListener("click", reset);

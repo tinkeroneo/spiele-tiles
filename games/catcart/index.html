@@ -15,6 +15,7 @@
       </div>
       <div class="actions">
         <button id="reset" class="ghost">Neu starten</button>
+        <button id="soundToggle" class="ghost">Sound: Aus</button>
         <a class="back" href="../../index.html">Zum Hub</a>
       </div>
     </header>
@@ -40,6 +41,15 @@
 
     <div class="stage">
       <canvas id="game" width="780" height="520" aria-label="Catcart Spiel"></canvas>
+      <div id="countdown" class="countdown">3</div>
+      <div class="touch-controls">
+        <button class="touch-btn" data-key="ArrowUp">Gas</button>
+        <div class="touch-row">
+          <button class="touch-btn" data-key="ArrowLeft">Links</button>
+          <button class="touch-btn" data-key="ArrowDown">Bremse</button>
+          <button class="touch-btn" data-key="ArrowRight">Rechts</button>
+        </div>
+      </div>
       <div class="hint">
         Steuerung: Pfeile oder WASD. Sammle Checkpoints und fahre durch die Startlinie.
       </div>
