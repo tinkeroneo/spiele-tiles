@@ -7,55 +7,44 @@ const speedEl = document.getElementById("speed");
 const resetBtn = document.getElementById("reset");
 const countdownEl = document.getElementById("countdown");
 const soundToggle = document.getElementById("soundToggle");
+const fullscreenToggle = document.getElementById("fullscreenToggle");
 const touchButtons = Array.from(document.querySelectorAll(".touch-btn"));
 
-const track = {
-  outer: { x: 40, y: 40, w: 700, h: 440 },
-  inner: { x: 190, y: 150, w: 400, h: 220 }
+const road = {
+  segmentLength: 200,
+  roadWidth: 2000,
+  rumbleLength: 3,
+  lanes: 2,
+  cameraHeight: 1000,
+  drawDistance: 200,
+  fieldOfView: 100
 };
 
-const walls = [
-  { x: 120, y: 120, w: 120, h: 60 },
-  { x: 520, y: 120, w: 120, h: 60 },
-  { x: 520, y: 340, w: 120, h: 60 },
-  { x: 120, y: 340, w: 120, h: 60 },
-  { x: 310, y: 220, w: 160, h: 80 }
-];
-
-const checkpoints = [
-  { x: 390, y: 70, r: 24 },
-  { x: 680, y: 260, r: 24 },
-  { x: 390, y: 450, r: 24 },
-  { x: 120, y: 260, r: 24 }
-];
-
-const boostPads = [
-  { x: 300, y: 86, w: 80, h: 18, lastHit: 0 },
-  { x: 400, y: 416, w: 80, h: 18, lastHit: 0 },
-  { x: 652, y: 230, w: 18, h: 60, lastHit: 0 }
-];
-
-const startLine = { x: 380, y: 40, w: 40, h: 8 };
+const colors = {
+  sky: "#0a0f14",
+  grass: "#0f1a12",
+  road: "#1a232c",
+  rumble: "#2b3947",
+  lane: "#c2ccd4",
+  checkpoint: "#58e07d"
+};
 
 const state = {
-  kart: { x: 360, y: 100, angle: Math.PI / 2, speed: 0 },
-  keys: {},
+  position: 0,
+  speed: 0,
+  playerX: 0,
   lap: 0,
   startTime: null,
-  lastTime: null,
   bestLap: null,
-  hitCheckpoints: new Set(),
-  startCrossed: false,
-  bestGhost: [],
-  ghostIndex: 0,
-  currentPath: [],
-  boostUntil: 0,
-  raceStarted: false,
   awaitingStart: true,
+  raceStarted: false,
   countdownTimer: null,
+  keys: {},
   audioOn: false
 };
 
+let segments = [];
+let trackLength = 0;
 let audioCtx = null;
 
 function ensureAudio() {
@@ -78,23 +67,30 @@ function playBeep(freq, duration = 0.12, volume = 0.08) {
   osc.stop(audioCtx.currentTime + duration);
 }
 
-function playBoost() { playBeep(660, 0.08, 0.12); }
-function playLap() { playBeep(520, 0.16, 0.1); }
 function playTick() { playBeep(300, 0.08, 0.08); }
 function playGo() { playBeep(880, 0.18, 0.12); }
 
+function resizeCanvas() {
+  const stage = canvas.parentElement;
+  const maxW = stage.clientWidth;
+  const maxH = Math.max(360, window.innerHeight * 0.6);
+  const width = Math.min(980, maxW);
+  const height = Math.min(maxH, width * 0.62);
+  canvas.width = Math.round(width * window.devicePixelRatio);
+  canvas.height = Math.round(height * window.devicePixelRatio);
+  canvas.style.width = `${Math.round(width)}px`;
+  canvas.style.height = `${Math.round(height)}px`;
+  ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+}
+
 function reset() {
-  state.kart = { x: 360, y: 100, angle: Math.PI / 2, speed: 0 };
+  state.position = 0;
+  state.speed = 0;
+  state.playerX = 0;
   state.lap = 0;
   state.startTime = null;
-  state.lastTime = null;
-  state.hitCheckpoints = new Set();
-  state.startCrossed = false;
-  state.currentPath = [];
-  state.ghostIndex = 0;
-  state.boostUntil = 0;
-  state.raceStarted = false;
   state.awaitingStart = true;
+  state.raceStarted = false;
   updateHud();
   countdownEl.textContent = "START";
   countdownEl.classList.add("show");
@@ -106,13 +102,7 @@ function updateHud() {
   const timeSec = state.startTime ? ((now - state.startTime) / 1000) : 0;
   timeEl.textContent = `${timeSec.toFixed(1)} s`;
   bestEl.textContent = state.bestLap ? `${state.bestLap.toFixed(2)} s` : "-";
-  speedEl.textContent = Math.round(state.kart.speed * 60);
-}
-
-function requestStart() {
-  if (!state.awaitingStart) return;
-  state.awaitingStart = false;
-  startCountdown();
+  speedEl.textContent = Math.round(state.speed * 120);
 }
 
 function startCountdown() {
@@ -121,7 +111,6 @@ function startCountdown() {
   countdownEl.textContent = String(count);
   countdownEl.classList.add("show");
   playTick();
-
   state.countdownTimer = setInterval(() => {
     count -= 1;
     if (count > 0) {
@@ -136,211 +125,209 @@ function startCountdown() {
       countdownEl.classList.remove("show");
       state.raceStarted = true;
       state.startTime = performance.now();
-      state.currentPath = [];
     }, 400);
   }, 800);
 }
 
-function insideRect(x, y, rect) {
-  return x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
+function requestStart() {
+  if (!state.awaitingStart) return;
+  state.awaitingStart = false;
+  startCountdown();
 }
 
-function insideOuter(x, y) {
-  return insideRect(x, y, track.outer);
-}
-
-function insideInner(x, y) {
-  return insideRect(x, y, track.inner);
-}
-
-function insideWall(x, y) {
-  return walls.some(w => insideRect(x, y, w));
-}
-
-function onTrack(x, y) {
-  return insideOuter(x, y) && !insideInner(x, y) && !insideWall(x, y);
-}
-
-function updateKart(dt) {
-  if (!state.raceStarted) return;
-  const k = state.kart;
-  const accel = state.keys["ArrowUp"] || state.keys["KeyW"] ? 0.18 : 0;
-  const brake = state.keys["ArrowDown"] || state.keys["KeyS"] ? 0.26 : 0;
-  const turn = (state.keys["ArrowLeft"] || state.keys["KeyA"]) ? -0.06 : (state.keys["ArrowRight"] || state.keys["KeyD"]) ? 0.06 : 0;
-  const dtScale = dt / 16.67;
-
-  const boostActive = performance.now() < state.boostUntil;
-  const topSpeed = boostActive ? 3.2 : 2.6;
-
-  k.speed += (accel - brake) * dtScale;
-  k.speed *= 0.96;
-  k.speed = Math.max(Math.min(k.speed, topSpeed), -1.2);
-
-  if (Math.abs(k.speed) > 0.05) {
-    k.angle += turn * (0.6 + Math.abs(k.speed) / 4);
-  }
-
-  const prev = { x: k.x, y: k.y };
-  k.x += Math.cos(k.angle) * k.speed * 16 * dtScale;
-  k.y += Math.sin(k.angle) * k.speed * 16 * dtScale;
-
-  if (!onTrack(k.x, k.y)) {
-    k.x = prev.x;
-    k.y = prev.y;
-    k.speed *= 0.4;
-  }
-}
-
-function checkCheckpoints() {
-  const k = state.kart;
-  checkpoints.forEach((cp, idx) => {
-    const dx = k.x - cp.x;
-    const dy = k.y - cp.y;
-    if (Math.hypot(dx, dy) < cp.r) {
-      state.hitCheckpoints.add(idx);
-    }
+function addSegment(curve = 0, y = 0) {
+  const n = segments.length;
+  segments.push({
+    index: n,
+    p1: { world: { x: 0, y: y, z: n * road.segmentLength } },
+    p2: { world: { x: 0, y: y, z: (n + 1) * road.segmentLength } },
+    curve
   });
 }
 
-function checkBoostPads() {
-  const now = performance.now();
-  const k = state.kart;
-  boostPads.forEach(pad => {
-    if (insideRect(k.x, k.y, pad) && now - pad.lastHit > 800) {
-      pad.lastHit = now;
-      state.boostUntil = now + 900;
-      playBoost();
-    }
-  });
-}
+function addRoad(enter, hold, leave, curve, hill) {
+  const startY = segments.length ? segments[segments.length - 1].p2.world.y : 0;
+  const endY = startY + hill * road.segmentLength;
+  const total = enter + hold + leave;
 
-function checkLap() {
-  if (!state.raceStarted) return;
-  const k = state.kart;
-  const onLine = k.x > startLine.x && k.x < startLine.x + startLine.w && k.y > startLine.y && k.y < startLine.y + startLine.h;
-
-  if (!onLine) {
-    state.startCrossed = false;
-    return;
+  for (let i = 0; i < enter; i += 1) {
+    addSegment(curve * (i / enter), startY + (endY - startY) * (i / total));
   }
-
-  if (state.startCrossed) return;
-  state.startCrossed = true;
-
-  if (state.hitCheckpoints.size === checkpoints.length) {
-    const now = performance.now();
-    const lapTime = (now - state.startTime) / 1000;
-    state.lap += 1;
-    state.startTime = now;
-    state.hitCheckpoints = new Set();
-
-    if (!state.bestLap || lapTime < state.bestLap) {
-      state.bestLap = lapTime;
-      state.bestGhost = [...state.currentPath];
-    }
-    state.currentPath = [];
-    state.ghostIndex = 0;
-    playLap();
+  for (let i = 0; i < hold; i += 1) {
+    addSegment(curve, startY + (endY - startY) * ((enter + i) / total));
+  }
+  for (let i = 0; i < leave; i += 1) {
+    addSegment(curve * (1 - i / leave), startY + (endY - startY) * ((enter + hold + i) / total));
   }
 }
 
-function recordPath(now) {
-  if (!state.raceStarted || !state.startTime) return;
-  const k = state.kart;
-  const t = (now - state.startTime) / 1000;
-  state.currentPath.push({ x: k.x, y: k.y, t });
-  if (state.currentPath.length > 2000) state.currentPath.shift();
+function buildTrack() {
+  segments = [];
+  addRoad(20, 60, 20, 0, 0);
+  addRoad(20, 40, 20, 0.8, 0);
+  addRoad(20, 60, 20, -0.6, 0.3);
+  addRoad(20, 40, 20, 1.0, -0.2);
+  addRoad(20, 80, 20, 0, 0.5);
+  addRoad(20, 60, 20, -0.8, -0.3);
+  addRoad(20, 60, 20, 0.4, 0);
+  addRoad(20, 80, 20, 0, -0.4);
+
+  trackLength = segments.length * road.segmentLength;
 }
 
-function drawTrack() {
-  ctx.fillStyle = "#0a0f14";
+function findSegment(z) {
+  return segments[Math.floor(z / road.segmentLength) % segments.length];
+}
+
+function project(p, cameraX, cameraY, cameraZ) {
+  const cameraDepth = 1 / Math.tan((road.fieldOfView / 2) * Math.PI / 180);
+  const transX = p.world.x - cameraX;
+  const transY = p.world.y - cameraY;
+  const transZ = p.world.z - cameraZ;
+
+  p.screen = p.screen || {};
+  p.screen.scale = cameraDepth / transZ;
+  p.screen.x = Math.round((1 + p.screen.scale * transX / road.roadWidth) * canvas.width / 2);
+  p.screen.y = Math.round((1 - p.screen.scale * transY / road.roadWidth) * canvas.height / 2);
+  p.screen.w = Math.round(p.screen.scale * canvas.width * road.roadWidth / 2);
+}
+
+function drawSegment(p1, p2, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(p1.x - p1.w, p1.y);
+  ctx.lineTo(p2.x - p2.w, p2.y);
+  ctx.lineTo(p2.x + p2.w, p2.y);
+  ctx.lineTo(p1.x + p1.w, p1.y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function render() {
+  ctx.fillStyle = colors.sky;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#0f1a12";
-  ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
+  const baseSegment = findSegment(state.position);
+  const baseIndex = baseSegment.index;
+  const basePercent = (state.position % road.segmentLength) / road.segmentLength;
 
-  ctx.fillStyle = "#1a232c";
-  ctx.fillRect(track.outer.x, track.outer.y, track.outer.w, track.outer.h);
-  ctx.fillStyle = "#0f1a12";
-  ctx.fillRect(track.inner.x, track.inner.y, track.inner.w, track.inner.h);
+  let maxY = canvas.height;
+  let dx = -baseSegment.curve * basePercent;
+  let x = 0;
 
-  ctx.fillStyle = "#131b24";
-  walls.forEach(w => ctx.fillRect(w.x, w.y, w.w, w.h));
+  for (let n = 0; n < road.drawDistance; n += 1) {
+    const segment = segments[(baseIndex + n) % segments.length];
+    segment.looped = segment.index < baseIndex;
 
-  ctx.strokeStyle = "#2b3947";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 10]);
-  ctx.strokeRect(track.outer.x + 26, track.outer.y + 26, track.outer.w - 52, track.outer.h - 52);
-  ctx.setLineDash([]);
+    const p1 = segment.p1;
+    const p2 = segment.p2;
 
-  checkpoints.forEach((cp, idx) => {
-    ctx.beginPath();
-    ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
-    ctx.fillStyle = "#1c2732";
-    ctx.fill();
-    ctx.strokeStyle = state.hitCheckpoints.has(idx) ? "#58e07d" : "#3b4c5e";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-  });
+    p1.world.x = x;
+    p2.world.x = x + dx;
 
-  boostPads.forEach(pad => {
-    ctx.fillStyle = "rgba(97, 210, 255, 0.3)";
-    ctx.fillRect(pad.x, pad.y, pad.w, pad.h);
-    ctx.strokeStyle = "#61d2ff";
-    ctx.strokeRect(pad.x, pad.y, pad.w, pad.h);
-  });
+    project(p1, state.playerX * road.roadWidth, road.cameraHeight, state.position - (segment.looped ? trackLength : 0));
+    project(p2, state.playerX * road.roadWidth, road.cameraHeight, state.position - (segment.looped ? trackLength : 0));
+
+    x += dx;
+    dx += segment.curve;
+
+    if (p1.screen.y >= maxY) continue;
+
+    const grass = (Math.floor(segment.index / road.rumbleLength) % 2) ? "#0f1a12" : "#0c1510";
+    drawSegment(
+      { x: canvas.width / 2, y: p2.screen.y, w: canvas.width },
+      { x: canvas.width / 2, y: p1.screen.y, w: canvas.width },
+      grass
+    );
+
+    const rumble = (Math.floor(segment.index / road.rumbleLength) % 2) ? "#2b3947" : "#202a36";
+    drawSegment(
+      { x: p2.screen.x, y: p2.screen.y, w: p2.screen.w * 1.15 },
+      { x: p1.screen.x, y: p1.screen.y, w: p1.screen.w * 1.15 },
+      rumble
+    );
+
+    drawSegment(
+      { x: p2.screen.x, y: p2.screen.y, w: p2.screen.w },
+      { x: p1.screen.x, y: p1.screen.y, w: p1.screen.w },
+      colors.road
+    );
+
+    const laneW = p2.screen.w * (2 / road.lanes) / road.lanes;
+    if (road.lanes > 1) {
+      for (let lane = 1; lane < road.lanes; lane += 1) {
+        const laneX1 = p1.screen.x - p1.screen.w + (p1.screen.w * 2 * lane / road.lanes);
+        const laneX2 = p2.screen.x - p2.screen.w + (p2.screen.w * 2 * lane / road.lanes);
+        ctx.strokeStyle = colors.lane;
+        ctx.lineWidth = Math.max(1, p2.screen.w / 120);
+        ctx.beginPath();
+        ctx.moveTo(laneX1, p1.screen.y);
+        ctx.lineTo(laneX2, p2.screen.y);
+        ctx.stroke();
+      }
+    }
+
+    maxY = p1.screen.y;
+  }
+
+  drawCar();
+}
+
+function drawCar() {
+  const carW = 50;
+  const carH = 90;
+  const x = canvas.width / 2 + state.playerX * canvas.width * 0.25;
+  const y = canvas.height - 140;
 
   ctx.fillStyle = "#ffb347";
-  ctx.fillRect(startLine.x, startLine.y, startLine.w, startLine.h);
-}
-
-function drawKart(k, ghost = false) {
-  ctx.save();
-  ctx.translate(k.x, k.y);
-  ctx.rotate(k.angle || 0);
-
-  ctx.globalAlpha = ghost ? 0.45 : 1;
-  ctx.fillStyle = ghost ? "#61d2ff" : "#ffb347";
-  ctx.fillRect(-14, -8, 28, 16);
+  ctx.fillRect(x - carW / 2, y - carH / 2, carW, carH);
   ctx.fillStyle = "#0c1014";
-  ctx.fillRect(-6, -7, 12, 14);
-
-  ctx.fillStyle = "#2b3947";
-  ctx.fillRect(-12, -10, 6, 4);
-  ctx.fillRect(6, -10, 6, 4);
-  ctx.fillRect(-12, 6, 6, 4);
-  ctx.fillRect(6, 6, 6, 4);
-
+  ctx.fillRect(x - 12, y - carH / 2 + 8, 24, carH - 16);
   ctx.fillStyle = "#f2f5f7";
   ctx.beginPath();
-  ctx.arc(12, 0, 4, 0, Math.PI * 2);
+  ctx.arc(x + carW / 2 - 6, y - 10, 6, 0, Math.PI * 2);
   ctx.fill();
-
-  ctx.restore();
 }
 
-function drawGhost(now) {
-  if (!state.bestGhost.length || !state.raceStarted) return;
-  const lapTime = (now - state.startTime) / 1000;
-  while (state.ghostIndex < state.bestGhost.length - 1 && state.bestGhost[state.ghostIndex].t < lapTime) {
-    state.ghostIndex += 1;
+function update(dt) {
+  if (!state.raceStarted) return;
+  const accel = (state.keys["ArrowUp"] || state.keys["KeyW"]) ? 0.04 : 0;
+  const brake = (state.keys["ArrowDown"] || state.keys["KeyS"]) ? 0.06 : 0;
+  const turnLeft = state.keys["ArrowLeft"] || state.keys["KeyA"];
+  const turnRight = state.keys["ArrowRight"] || state.keys["KeyD"];
+
+  const maxSpeed = 2.6;
+  state.speed += accel - brake;
+  state.speed = Math.max(0, Math.min(maxSpeed, state.speed));
+  state.speed *= 0.99;
+
+  const segment = findSegment(state.position);
+  state.playerX -= segment.curve * 0.003 * state.speed;
+  if (turnLeft) state.playerX -= 0.03 * state.speed;
+  if (turnRight) state.playerX += 0.03 * state.speed;
+  state.playerX = Math.max(-1.2, Math.min(1.2, state.playerX));
+
+  if (Math.abs(state.playerX) > 1) {
+    state.speed *= 0.96;
   }
-  const ghost = state.bestGhost[state.ghostIndex];
-  if (ghost) drawKart({ x: ghost.x, y: ghost.y, angle: 0 }, true);
+
+  state.position += state.speed * dt * 60;
+  if (state.position >= trackLength) {
+    state.position -= trackLength;
+    state.lap += 1;
+    const now = performance.now();
+    const lapTime = (now - state.startTime) / 1000;
+    if (!state.bestLap || lapTime < state.bestLap) state.bestLap = lapTime;
+    state.startTime = now;
+  }
 }
 
 let last = performance.now();
 function loop(now) {
-  const dt = Math.min(20, now - last);
+  const dt = Math.min(32, now - last) / 1000;
   last = now;
-  updateKart(dt);
-  checkCheckpoints();
-  checkBoostPads();
-  checkLap();
-  recordPath(now);
-  drawTrack();
-  drawGhost(now);
-  drawKart(state.kart, false);
+  update(dt);
+  render();
   updateHud();
   requestAnimationFrame(loop);
 }
@@ -374,7 +361,24 @@ soundToggle.addEventListener("click", () => {
   soundToggle.textContent = state.audioOn ? "Sound: An" : "Sound: Aus";
 });
 
+fullscreenToggle.addEventListener("click", async () => {
+  if (!document.fullscreenElement) {
+    await document.documentElement.requestFullscreen();
+  } else {
+    await document.exitFullscreen();
+  }
+  resizeCanvas();
+});
+
+document.addEventListener("fullscreenchange", () => {
+  fullscreenToggle.textContent = document.fullscreenElement ? "Exit Fullscreen" : "Fullscreen";
+  resizeCanvas();
+});
+
+window.addEventListener("resize", resizeCanvas);
 resetBtn.addEventListener("click", reset);
 
+buildTrack();
+resizeCanvas();
 reset();
 requestAnimationFrame(loop);

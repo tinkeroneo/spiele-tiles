@@ -103,9 +103,9 @@
   border: 1px solid #2b3947;
   background: rgba(19, 26, 34, 0.9);
   color: #f2f5f7;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .hint {
@@ -119,4 +119,5 @@
   .actions { width: 100%; }
   .actions button, .actions a { flex: 1; text-align: center; }
   .touch-controls { display: flex; }
+  .touch-btn { min-width: 70px; min-height: 48px; }
 }
