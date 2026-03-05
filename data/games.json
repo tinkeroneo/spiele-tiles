@@ -1,0 +1,34 @@
+﻿[
+  {
+    "id": "muehle",
+    "title": "Muehle",
+    "status": "prototype",
+    "description": "Grundlayout und Spielfeld - Logik folgt.",
+    "tags": ["board"],
+    "link": "games/muehle/index.html"
+  },
+  {
+    "id": "schach",
+    "title": "Schach Mini",
+    "status": "coming",
+    "description": "Leichtgewichtiges Schach-UI, spaeter Regeln.",
+    "tags": ["board", "experiment"],
+    "link": ""
+  },
+  {
+    "id": "reaktion",
+    "title": "Reaktions-Tester",
+    "status": "coming",
+    "description": "Ein schnelles Timing-Gadget.",
+    "tags": ["gadgets"],
+    "link": ""
+  },
+  {
+    "id": "cat-platformer",
+    "title": "Cat-Platformer",
+    "status": "coming",
+    "description": "Spaeter als eigener Slot im Hub.",
+    "tags": ["arcade"],
+    "link": ""
+  }
+]

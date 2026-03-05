@@ -1,0 +1,37 @@
+﻿body {
+  margin: 0;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  background: #0c1014;
+  color: #f2f5f7;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.wrap {
+  text-align: center;
+  padding: 40px;
+}
+
+.board {
+  width: 280px;
+  height: 280px;
+  position: relative;
+  margin: 30px auto;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #3b4c5e;
+}
+
+.ring:nth-child(2) { inset: 35px; }
+.ring:nth-child(3) { inset: 70px; }
+
+.back {
+  display: inline-block;
+  margin-top: 12px;
+  color: #ffb347;
+  text-decoration: none;
+}
