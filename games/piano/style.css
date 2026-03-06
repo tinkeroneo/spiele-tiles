@@ -146,6 +146,30 @@
   box-shadow: 0 0 10px rgba(255,179,71,0.4);
 }
 
+.note.len-2,
+.note.len-1 {
+  background: transparent;
+  border: 2px solid rgba(255,179,71,0.9);
+  box-shadow: none;
+}
+
+.note.len-8::after,
+.note.len-16::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: -10px;
+  width: 6px;
+  height: 10px;
+  border-right: 2px solid rgba(242,245,247,0.7);
+  border-top: 2px solid rgba(242,245,247,0.7);
+  border-top-right-radius: 6px;
+}
+
+.note.len-16::after {
+  box-shadow: 0 6px 0 rgba(242,245,247,0.7);
+}
+
 .note.sharp {
   background: #61d2ff;
   box-shadow: 0 0 10px rgba(97,210,255,0.4);
@@ -168,6 +192,11 @@
   height: 2px;
   background: rgba(255,255,255,0.15);
   border-radius: 999px;
+}
+
+.note-bar.len-1,
+.note-bar.len-2 {
+  background: rgba(255,255,255,0.3);
 }
 
 .beatline,

@@ -121,6 +121,32 @@ function updateMeta() {
   recordMeta.textContent = `${events.length} Noten · ${sec}s`;
 }
 
+function lengthClass(duration, beatMs) {
+  const unit = beatMs / 4;
+  const units = Math.max(1, Math.round(duration / unit));
+  if (units <= 1) return { cls: "len-16", q: units * unit };
+  if (units <= 2) return { cls: "len-8", q: units * unit };
+  if (units <= 4) return { cls: "len-4", q: units * unit };
+  if (units <= 8) return { cls: "len-2", q: units * unit };
+  return { cls: "len-1", q: units * unit };
+}
+
+function chordGroups(list, threshold = 80) {
+  const buckets = new Map();
+  list.forEach((event, index) => {
+    const key = Math.round(event.start / threshold);
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(index);
+  });
+  const groupInfo = new Map();
+  buckets.forEach((indices) => {
+    indices.forEach((idx, pos) => {
+      groupInfo.set(idx, { size: indices.length, pos });
+    });
+  });
+  return groupInfo;
+}
+
 function renderStaff() {
   const lines = Array.from(staffTrack.querySelectorAll(".staff-line"));
   const head = staffTrack.querySelector(".playhead");
@@ -139,6 +165,7 @@ function renderStaff() {
   staffTrack.style.width = `${width}px`;
 
   const beatMs = 60000 / tempo;
+  const groups = chordGroups(events);
   let beat = 0;
   for (let t = 0; t <= duration; t += beatMs) {
     const line = document.createElement("div");
@@ -148,11 +175,14 @@ function renderStaff() {
     beat += 1;
   }
 
-  events.forEach((event) => {
-    const left = event.start * pxPerMs;
+  events.forEach((event, index) => {
+    const group = groups.get(index);
+    const offset = group ? (group.pos - (group.size - 1) / 2) * 6 : 0;
+    const left = event.start * pxPerMs + offset;
     const top = noteToY(event.note);
+    const len = lengthClass(event.duration, beatMs);
     const noteEl = document.createElement("div");
-    noteEl.className = `note ${event.note.includes("#") ? "sharp" : ""}`;
+    noteEl.className = `note ${event.note.includes("#") ? "sharp" : ""} ${len.cls}`;
     noteEl.style.left = `${left}px`;
     noteEl.style.top = `${top}px`;
     staffTrack.appendChild(noteEl);
@@ -166,10 +196,10 @@ function renderStaff() {
     staffTrack.appendChild(stem);
 
     const bar = document.createElement("div");
-    bar.className = "note-bar";
+    bar.className = `note-bar ${len.cls}`;
     bar.style.left = `${left + 8}px`;
     bar.style.top = `${top + 4}px`;
-    bar.style.width = `${Math.max(10, event.duration * pxPerMs)}px`;
+    bar.style.width = `${Math.max(10, len.q * pxPerMs)}px`;
     staffTrack.appendChild(bar);
   });
 
@@ -472,7 +502,7 @@ window.addEventListener("keydown", (e) => {
     if (!sustainToggle.checked) releaseSustain();
     return;
   }
-  if (e.shiftKey && key === "Z") return shiftOctave(-1);
+  if (e.shiftKey && key === "Y") return shiftOctave(-1);
   if (e.shiftKey && key === "X") return shiftOctave(1);
   const el = keyboard.querySelector(`.key[data-key="${key}"]`) || keyboard.querySelector(`.key[data-alt-key="${key}"]`);
   if (!el) return;
