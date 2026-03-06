@@ -269,6 +269,33 @@
   font-size: 13px;
 }
 
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding: 24px;
+  background: radial-gradient(circle at top, rgba(10,13,17,0.35), rgba(6,8,10,0.75));
+  z-index: 10;
+}
+
+.overlay.hidden { display: none; }
+
+.overlay-card {
+  width: min(520px, 92vw);
+  border-radius: 18px;
+  border: 1px solid #263240;
+  background: rgba(14, 19, 25, 0.95);
+  padding: 18px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+  display: grid;
+  gap: 12px;
+}
+
+.overlay-title { font-weight: 600; font-size: 18px; }
+
+.overlay-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
 @media (max-width: 760px) {
   .head { flex-direction: column; align-items: flex-start; }
   .actions { width: 100%; justify-content: flex-start; }
@@ -280,4 +307,5 @@
   .library select,
   .controls .btn,
   .controls .chip { width: 100%; justify-content: space-between; }
+  .overlay { place-items: end stretch; padding: 16px; }
 }

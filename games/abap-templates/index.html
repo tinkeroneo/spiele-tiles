@@ -1,0 +1,65 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ABAP Templates</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div>
+        <h1>ABAP Templates</h1>
+        <p class="lead">Schnelle Vorlagen für Reports, Klassen, CDS & mehr.</p>
+      </div>
+      <div class="actions">
+        <a class="back" href="../../index.html">Zum Hub</a>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="field">
+        <label for="search">Suche</label>
+        <input id="search" type="search" placeholder="Titel oder Stichwort" />
+      </div>
+      <div class="field">
+        <label for="category">Kategorie</label>
+        <select id="category">
+          <option value="all">Alle</option>
+          <option value="report">Report</option>
+          <option value="class">Klasse</option>
+          <option value="cds">CDS</option>
+          <option value="alv">ALV</option>
+          <option value="test">Test</option>
+        </select>
+      </div>
+      <div class="field inline">
+        <label for="name">Name</label>
+        <input id="name" type="text" placeholder="ZCL_MY_CLASS" />
+      </div>
+      <div class="field inline">
+        <label for="desc">Beschreibung</label>
+        <input id="desc" type="text" placeholder="Kurzer Text" />
+      </div>
+      <div class="field inline">
+        <label for="author">Autor</label>
+        <input id="author" type="text" placeholder="KK" />
+      </div>
+      <div class="field inline">
+        <label for="package">Paket</label>
+        <input id="package" type="text" placeholder="$TMP" />
+      </div>
+      <div class="field inline">
+        <label for="table">Tabelle</label>
+        <input id="table" type="text" placeholder="SFLIGHT" />
+      </div>
+      <button id="clear" class="btn ghost">Felder leeren</button>
+    </section>
+
+    <section class="grid" id="grid" aria-live="polite"></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

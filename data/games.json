@@ -134,5 +134,27 @@
                  ],
         "icon":  "📸",
         "link":  "https://booth.kiliankellner.com"
+    },
+    {
+        "id":  "abap-templates",
+        "title":  "ABAP Templates",
+        "status":  "prototype",
+        "description":  "Vorlagen für Reports, Klassen, CDS, ALV und Tests.",
+        "tags":  [
+                     "tools"
+                 ],
+        "icon":  "🧩",
+        "link":  "games/abap-templates/index.html"
+    },
+    {
+        "id":  "abap-generator",
+        "title":  "ABAP Generator",
+        "status":  "prototype",
+        "description":  "ABAP Code per Baukasten generieren.",
+        "tags":  [
+                     "tools"
+                 ],
+        "icon":  "🧰",
+        "link":  "games/abap-generator/index.html"
     }
 ]

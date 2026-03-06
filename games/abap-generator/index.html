@@ -1,0 +1,72 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ABAP Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="head">
+      <div>
+        <h1>ABAP Generator</h1>
+        <p class="lead">Bausteine auswählen und ABAP Code generieren.</p>
+      </div>
+      <div class="actions">
+        <a class="back" href="../../index.html">Zum Hub</a>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="field">
+        <label for="objectType">Objekt</label>
+        <select id="objectType">
+          <option value="report">Report</option>
+          <option value="class">Klasse</option>
+          <option value="function">Funktionsbaustein</option>
+          <option value="cds">CDS</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="objectName">Name</label>
+        <input id="objectName" type="text" placeholder="ZCL_REPORT" />
+      </div>
+      <div class="field">
+        <label for="author">Autor</label>
+        <input id="author" type="text" placeholder="KK" />
+      </div>
+      <div class="field">
+        <label for="package">Paket</label>
+        <input id="package" type="text" placeholder="$TMP" />
+      </div>
+      <div class="field">
+        <label for="table">Tabelle</label>
+        <input id="table" type="text" placeholder="SFLIGHT" />
+      </div>
+      <div class="field">
+        <label for="features">Features</label>
+        <div class="checks">
+          <label><input type="checkbox" value="selection" checked /> Selection-Screen</label>
+          <label><input type="checkbox" value="alv" /> ALV Ausgabe</label>
+          <label><input type="checkbox" value="logging" /> Logging</label>
+          <label><input type="checkbox" value="unit" /> Unit Test</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="output">
+      <div class="output-head">
+        <div class="output-title">Generierter Code</div>
+        <div class="output-actions">
+          <button id="copy" class="btn copy">Copy</button>
+          <button id="reset" class="btn ghost">Zurücksetzen</button>
+        </div>
+      </div>
+      <pre id="result"><code></code></pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

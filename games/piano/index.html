@@ -83,6 +83,26 @@
     <div class="hint">QWERTZ: A S D F G H J (weiß) · W E T Z U (schwarz). Oktave per Buttons oder Shift+Y/X, Sustain mit Space.</div>
   </main>
 
+  <div id="playOverlay" class="overlay hidden" aria-hidden="true">
+    <div class="overlay-card">
+      <div class="overlay-title">Playback</div>
+      <div class="overlay-row">
+        <button id="overlayStop" class="btn ghost">Stop</button>
+        <label class="toggle">
+          <input id="overlayLoop" type="checkbox" />
+          <span>Loop</span>
+        </label>
+      </div>
+      <div class="overlay-row">
+        <label class="chip">
+          <span class="chip-label">Tempo</span>
+          <input id="overlayTempo" type="range" min="40" max="200" value="100" />
+          <span id="overlayTempoValue" class="chip-value">100 BPM</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

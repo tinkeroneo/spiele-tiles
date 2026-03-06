@@ -1,0 +1,119 @@
+﻿body {
+  margin: 0;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  background: radial-gradient(circle at top, #1a232c, #0c1014);
+  color: #f2f5f7;
+  min-height: 100vh;
+}
+
+.wrap {
+  width: min(1100px, 94vw);
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lead { color: #c2ccd4; margin-top: 6px; }
+
+.actions { display: flex; gap: 12px; align-items: center; }
+
+.back {
+  border: 1px solid #2b3947;
+  background: transparent;
+  color: #f2f5f7;
+  padding: 10px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.controls {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  background: rgba(15,20,26,0.6);
+  border: 1px solid #25303a;
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.inline { min-width: 180px; }
+
+label { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #9fb0bd; }
+
+input, select {
+  background: #10161c;
+  color: #f2f5f7;
+  border: 1px solid #2b3947;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.btn {
+  border: 1px solid #2b3947;
+  background: #11171d;
+  color: #f2f5f7;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  height: fit-content;
+  align-self: end;
+}
+
+.btn.ghost { border-style: dashed; color: #9fb0bd; }
+
+.grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: #11171d;
+  border: 1px solid #25303a;
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.card h3 { margin: 0; font-size: 18px; }
+
+.meta { color: #9fb0bd; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+pre {
+  margin: 0;
+  background: #0c1116;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 220px;
+}
+
+.actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.copy {
+  border: 1px solid rgba(97,210,255,0.4);
+  background: rgba(97,210,255,0.12);
+  color: #e8f6ff;
+}
+
+@media (max-width: 720px) {
+  .head { flex-direction: column; align-items: flex-start; }
+  .controls { grid-template-columns: 1fr; }
+  .btn { width: 100%; }
+}

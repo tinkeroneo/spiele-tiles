@@ -18,6 +18,11 @@ const tempoInput = document.getElementById("tempo");
 const tempoValue = document.getElementById("tempoValue");
 const metronomeToggle = document.getElementById("metronomeToggle");
 const sustainToggle = document.getElementById("sustainToggle");
+const playOverlay = document.getElementById("playOverlay");
+const overlayStop = document.getElementById("overlayStop");
+const overlayLoop = document.getElementById("overlayLoop");
+const overlayTempo = document.getElementById("overlayTempo");
+const overlayTempoValue = document.getElementById("overlayTempoValue");
 
 const baseWhiteKeys = ["C","D","E","F","G","A","B"];
 const baseBlackKeys = ["C#","D#","F#","G#","A#"];
@@ -41,6 +46,7 @@ let currentOctave = 4;
 let tempo = 100;
 let metronomeTimer = null;
 let recordings = [];
+let loopEnabled = false;
 const storageKey = "piano-recordings-v1";
 
 function ensureAudio() {
@@ -206,6 +212,11 @@ function renderStaff() {
   updateMeta();
 }
 
+function showOverlay(show) {
+  playOverlay.classList.toggle("hidden", !show);
+  playOverlay.setAttribute("aria-hidden", show ? "false" : "true");
+}
+
 function startRecording() {
   if (playing) stopPlayback();
   recording = true;
@@ -251,6 +262,7 @@ function startPlayback() {
   clearBtn.disabled = true;
   saveBtn.disabled = true;
   clearPlayback();
+  showOverlay(true);
 
   const duration = Math.max(...events.map(e => e.start + e.duration));
   const noteEls = Array.from(staffTrack.querySelectorAll(".note"));
@@ -279,6 +291,7 @@ function startPlayback() {
     playhead.style.transform = `translateX(${t * pxPerMs}px)`;
     if (t >= duration) {
       stopPlayback();
+      if (loopEnabled) startPlayback();
       return;
     }
     requestAnimationFrame(tick);
@@ -295,6 +308,7 @@ function stopPlayback() {
   playBtn.disabled = events.length === 0;
   clearBtn.disabled = events.length === 0;
   saveBtn.disabled = events.length === 0;
+  showOverlay(false);
 }
 
 function clearRecording() {
@@ -385,6 +399,8 @@ function loadRecording(id) {
   tempo = record.tempo ?? 100;
   tempoInput.value = tempo;
   tempoValue.textContent = `${tempo} BPM`;
+  overlayTempo.value = tempo;
+  overlayTempoValue.textContent = `${tempo} BPM`;
   events = record.events.map(e => ({ ...e }));
   render();
   renderStaff();
@@ -445,6 +461,17 @@ function stopMetronome() {
 function updateTempo(value) {
   tempo = Number(value);
   tempoValue.textContent = `${tempo} BPM`;
+  overlayTempo.value = tempo;
+  overlayTempoValue.textContent = `${tempo} BPM`;
+  renderStaff();
+  if (metronomeToggle.checked) startMetronome();
+}
+
+function updateOverlayTempo(value) {
+  tempo = Number(value);
+  tempoValue.textContent = `${tempo} BPM`;
+  overlayTempoValue.textContent = `${tempo} BPM`;
+  tempoInput.value = tempo;
   renderStaff();
   if (metronomeToggle.checked) startMetronome();
 }
@@ -545,6 +572,10 @@ metronomeToggle.addEventListener("change", (e) => {
   else stopMetronome();
 });
 
+overlayTempo.addEventListener("input", (e) => updateOverlayTempo(e.target.value));
+overlayLoop.addEventListener("change", (e) => { loopEnabled = e.target.checked; });
+overlayStop.addEventListener("click", stopPlayback);
+
 sustainToggle.addEventListener("change", (e) => {
   if (!e.target.checked) releaseSustain();
 });
@@ -558,6 +589,9 @@ document.addEventListener("visibilitychange", () => {
 function init() {
   tempoInput.value = tempo;
   tempoValue.textContent = `${tempo} BPM`;
+  overlayTempo.value = tempo;
+  overlayTempoValue.textContent = `${tempo} BPM`;
+  overlayLoop.checked = loopEnabled;
   render();
   renderStaff();
   loadRecordingsFromStorage();
