@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8" />
@@ -9,11 +9,7 @@
 </head>
 <body>
   <main class="wrap">
-    <header class="head">
-      <div>
-        <h1>ImmoKredit Tool</h1>
-        <p class="lead">Kredit, Nebenkosten, Amortisation, Geldanlage, Gehalt und Ausgaben.</p>
-      </div>
+    <header class="head head-compact">
       <div class="actions">
         <div class="profile">
           <select id="profileSelect"></select>
@@ -33,6 +29,7 @@
       <button class="tab" data-tab="anlage">Geldanlage</button>
       <button class="tab" data-tab="gehalt">Gehalt</button>
       <button class="tab" data-tab="ausgaben">Ausgaben</button>
+      <button class="tab" data-tab="angebote">Angebote</button>
     </section>
 
     <section id="kredit" class="panel active">
@@ -65,6 +62,59 @@
           <div class="stat">
             <div class="label">Laufzeit (Monate)</div>
             <div id="laufzeitMon" class="value">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Wohnkostenvergleich</h2>
+        <div class="grid-2">
+          <div>
+            <label>Aktuelle Wohnkosten/Monat <input id="currentHousingCost" type="number" value="1800" /></label>
+            <label>Erwartete NK Wohnung/Monat <input id="expectedNkWhg" type="number" value="350" /></label>
+            <label>Erwartete NK Haus/Monat <input id="expectedNkHaus" type="number" value="500" /></label>
+          </div>
+          <div>
+            <div class="stat">
+              <div class="label">Neu gesamt Wohnung (Rate + NK)</div>
+              <div id="newCostWhg" class="value">-</div>
+            </div>
+            <div class="stat">
+              <div class="label">Differenz Wohnung vs. aktuell</div>
+              <div id="diffWhg" class="value">-</div>
+            </div>
+            <div class="stat">
+              <div class="label">Neu gesamt Haus (Rate + NK)</div>
+              <div id="newCostHaus" class="value">-</div>
+            </div>
+            <div class="stat">
+              <div class="label">Differenz Haus vs. aktuell</div>
+              <div id="diffHaus" class="value">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Verlauf: Restschuld vs. EK-Investition</h2>
+        <canvas id="compareChart" class="compare-chart" width="1000" height="320" aria-label="Vergleich Restschuld und Investition"></canvas>
+        <div class="chart-legend">
+          <span><i class="dot dot-loan"></i> Restschuld</span>
+          <span><i class="dot dot-invest"></i> Investitionswert</span>
+          <span><i class="dot dot-cost"></i> Gesamtkosten kumuliert</span>
+        </div>
+        <div class="stats-row">
+          <div class="stat">
+            <div class="label">Investitionswert am Ende</div>
+            <div id="investEndValue" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Restschuld am Ende</div>
+            <div id="loanEndValue" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Schnittpunkt (Invest >= Restschuld)</div>
+            <div id="breakEvenPoint" class="value">-</div>
           </div>
         </div>
       </div>
@@ -225,6 +275,56 @@
             <div class="label">Person B Monat</div>
             <div id="expB" class="value">-</div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="angebote" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Angebot erfassen</h2>
+          <label>Angebot wählen
+            <select id="offerSelect">
+              <option value="">Neues Angebot</option>
+            </select>
+          </label>
+          <div class="toolbar">
+            <button id="offerNew" class="ghost">Neu</button>
+            <button id="offerSave" class="ghost">Speichern</button>
+            <button id="offerDelete" class="ghost">Löschen</button>
+          </div>
+
+          <label>Kurzlabel <input id="offerTitle" type="text" placeholder="z. B. Wohnung Zürich" /></label>
+          <label>Typ
+            <select id="offerType">
+              <option>Wohnung</option>
+              <option>Haus</option>
+              <option>Mehrfamilienhaus</option>
+              <option>Grundstück</option>
+              <option>Sonstiges</option>
+            </select>
+          </label>
+          <label>Preis <input id="offerPrice" type="number" value="0" /></label>
+          <label>Provision (%) <input id="offerProvision" type="number" step="0.01" value="0" /></label>
+          <label>Stellplätze (Anzahl) <input id="offerParkingCount" type="number" value="0" /></label>
+          <label>Preis je Stellplatz <input id="offerParkingPrice" type="number" value="0" /></label>
+          <label>Wohnfläche (m²) <input id="offerArea" type="number" step="0.1" value="0" /></label>
+          <label>Grundstück (m²) <input id="offerLandArea" type="number" step="0.1" value="0" /></label>
+          <label>Link 1 <input id="offerLink1" type="url" placeholder="https://..." /></label>
+          <label>Link 2 <input id="offerLink2" type="url" placeholder="https://..." /></label>
+          <label>Link 3 <input id="offerLink3" type="url" placeholder="https://..." /></label>
+          <label class="stack">Bilder
+            <input id="offerImages" type="file" accept="image/*" multiple />
+            <div id="offerImagePreview" class="offer-image-preview"></div>
+          </label>
+          <label class="stack">Freitext
+            <textarea id="offerNotes" rows="5" placeholder="Notizen, Lage, Zustand, Besonderheiten..."></textarea>
+          </label>
+        </div>
+
+        <div class="card">
+          <h2>Gespeicherte Angebote</h2>
+          <div id="offerList" class="offer-list"></div>
         </div>
       </div>
     </section>

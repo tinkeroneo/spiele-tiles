@@ -31,9 +31,20 @@ body {
   gap: 16px;
 }
 
+.head.head-compact {
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
 .lead { color: var(--muted); margin-top: 6px; }
 
 .actions { display: flex; gap: 10px; }
+
+.head.head-compact .actions {
+  width: 100%;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
 
 .ghost, .back {
   border: 1px solid #2b3947;
@@ -166,10 +177,204 @@ th:first-child, td:first-child { text-align: left; }
   margin-top: 12px;
 }
 
+.compare-chart {
+  width: 100%;
+  height: 320px;
+  border: 1px solid #2b3947;
+  border-radius: 12px;
+  background: #0d131a;
+  display: block;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.dot-loan { background: #ff6b6b; }
+.dot-invest { background: #4cd1a8; }
+.dot-cost { background: #ffd166; }
+
+label.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+label.stack textarea,
+label.stack input[type="file"] {
+  width: 100%;
+  background: #0f141a;
+  color: var(--text);
+  border: 1px solid #2b3947;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.offer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.offer-empty {
+  border: 1px dashed #334455;
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--muted);
+}
+
+.offer-card {
+  border: 1px solid #2b3947;
+  border-radius: 12px;
+  background: #10171f;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.offer-card.active {
+  border-color: var(--accent);
+}
+
+.offer-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.offer-card-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.offer-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.offer-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.offer-metric {
+  background: #0c1218;
+  border: 1px solid #273544;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.offer-metric-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.offer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.offer-links a {
+  border: 1px solid #2b3947;
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.offer-gallery,
+.offer-image-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.offer-gallery img,
+.offer-preview-item img {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #2b3947;
+}
+
+.offer-preview-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.offer-preview-remove {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.offer-notes {
+  white-space: pre-wrap;
+  color: #d4dee6;
+  font-size: 13px;
+  background: #0c1218;
+  border: 1px solid #273544;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.offer-version-wrap {
+  border-top: 1px solid #273544;
+  padding-top: 8px;
+}
+
+.offer-version-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.offer-version-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.offer-version-table th,
+.offer-version-table td {
+  border-bottom: 1px solid #273544;
+  padding: 5px 6px;
+  text-align: left;
+}
+
 @media (max-width: 760px) {
   .head { flex-direction: column; align-items: flex-start; }
   .actions { width: 100%; flex-wrap: wrap; }
   .actions a, .actions button { flex: 1; text-align: center; }
+  .head.head-compact .actions a,
+  .head.head-compact .actions > button {
+    flex: 0 0 auto;
+  }
   .profile { width: 100%; flex-wrap: wrap; }
   .profile select, .profile input { flex: 1; min-width: 140px; }
   label { flex-direction: column; align-items: flex-start; }
