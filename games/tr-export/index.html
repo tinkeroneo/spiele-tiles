@@ -482,6 +482,22 @@
       return Number.isFinite(n) ? n : null;
     }
 
+    function parseQuantityNumber(input) {
+      if (input == null) return null;
+      let s = String(input)
+        .replace(/\u00a0/g, " ")
+        .trim();
+
+      if (!s) return null;
+
+      if (s.includes(",")) {
+        return parseGermanNumber(s);
+      }
+
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+
     function fmt(n, decimals = null) {
       if (n == null || n === "") return "";
       if (typeof n !== "number") return String(n);
@@ -710,7 +726,7 @@
 
       const isin = m[1].trim();
       const name = m[2].replace(/\s+/g, " ").trim();
-      const quantity = parseGermanNumber(m[3]);
+      const quantity = parseQuantityNumber(m[3]);
 
       const amountAbs = firstTransactionAmount(s);
       if (amountAbs == null) return null;
@@ -827,7 +843,7 @@
       const dir = m[1].toLowerCase();
       const name = m[2].replace(/\s+/g, " ").trim();
       const isin = m[3].trim();
-      const quantity = parseGermanNumber(m[4]);
+      const quantity = parseQuantityNumber(m[4]);
       const price = parseGermanNumber(m[5]);
       const amount = parseGermanNumber(m[6]);
 
