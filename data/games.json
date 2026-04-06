@@ -156,5 +156,16 @@
                  ],
         "icon":  "🧰",
         "link":  "games/abap-generator/index.html"
+    },
+    {
+        "id":  "tr-export",
+        "title":  "TR Export",
+        "status":  "prototype",
+        "description":  "TR-PDFs in ein pytr-kompatibles CSV umwandeln.",
+        "tags":  [
+                     "tools"
+                 ],
+        "icon":  "📄",
+        "link":  "games/tr-export/index.html"
     }
 ]

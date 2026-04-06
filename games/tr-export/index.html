@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../auth.js"></script>
+  <title>TR Export</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --panel-2: #1f2630;
+      --text: #e6edf3;
+      --muted: #9aa6b2;
+      --border: #2d3748;
+      --accent: #6ee7b7;
+      --accent-2: #60a5fa;
+      --danger: #fb7185;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, Arial, sans-serif;
+      background: linear-gradient(180deg, #0a0d12, #111827);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .sub {
+      color: var(--muted);
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: rgba(22, 27, 34, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .grow {
+      flex: 1 1 auto;
+      min-width: 220px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 180px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input[type="file"],
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 240px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    button,
+    .linkbtn {
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 15px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+    }
+
+    button.primary {
+      color: #08110e;
+      background: linear-gradient(135deg, var(--accent), #34d399);
+    }
+
+    button.secondary,
+    .linkbtn.secondary {
+      color: var(--text);
+      background: #243041;
+      border: 1px solid var(--border);
+    }
+
+    button.danger {
+      color: white;
+      background: linear-gradient(135deg, #ef4444, var(--danger));
+    }
+
+    .chk {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      user-select: none;
+    }
+
+    .status {
+      margin-top: 12px;
+      white-space: pre-wrap;
+      background: #0e141d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--muted);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+    }
+
+    .table-wrap {
+      max-height: 560px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #151b24;
+      z-index: 1;
+    }
+
+    .code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      background: #0b1018;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      max-height: 560px;
+      overflow: auto;
+    }
+
+    .pill {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 8px;
+      color: var(--muted);
+      font-size: 12px;
+      background: #111826;
+    }
+
+    .download-box {
+      margin-top: 12px;
+      display: none;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #243041;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    @media (max-width: 1080px) {
+      .head {
+        flex-direction: column;
+      }
+
+      .split {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="head">
+      <div>
+        <h1>TR Export</h1>
+        <div class="sub">
+          TR-PDFs in ein pytr-kompatibles CSV umwandeln.
+          <br />
+          Exportformat:
+          <span class="pill">id;ts;type;isin;symbol;name;quantity;price;currency;gross;fees;taxes;net;venue;booking_date;raw_source;notes</span>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="back" href="../../index.html">Zum Hub</a>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="row">
+        <div class="grow">
+          <input id="pdfFile" type="file" accept="application/pdf" />
+        </div>
+        <button id="readPdfBtn" class="primary">PDF lesen</button>
+        <button id="buildBtn" class="primary">CSV erzeugen</button>
+        <button id="copyBtn" class="secondary">CSV kopieren</button>
+        <button id="downloadBtn" class="secondary">CSV speichern</button>
+        <button id="clearBtn" class="danger">Leeren</button>
+      </div>
+
+      <div class="row" style="margin-top: 14px;">
+        <div class="field grow">
+          <label for="rawSourceInput">raw_source</label>
+          <input id="rawSourceInput" type="text" value="pdf_tr" placeholder="z. B. pdf_tr oder pytr" />
+        </div>
+
+        <div class="field">
+          <label for="dateFrom">von</label>
+          <input id="dateFrom" type="date" />
+        </div>
+
+        <div class="field">
+          <label for="dateTo">bis</label>
+          <input id="dateTo" type="date" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 10px;">
+        <label class="chk">
+          <input id="includeMoneyMarket" type="checkbox" checked />
+          Geldmarktfonds-Transaktionsübersicht mit übernehmen
+        </label>
+
+        <label class="chk">
+          <input id="includeCardAsRemoval" type="checkbox" checked />
+          Kartentransaktionen als Removal übernehmen
+        </label>
+
+        <label class="chk">
+          <input id="depositNameAsNote" type="checkbox" checked />
+          Überweisungs-Absender in notes übernehmen
+        </label>
+      </div>
+
+      <div class="row" style="margin-top: 12px;">
+        <div class="grow">
+          <textarea id="rawText" placeholder="Alternativ PDF-Text hier einfügen ..."></textarea>
+        </div>
+      </div>
+
+      <div id="downloadBox" class="download-box row">
+        <a id="downloadLink" class="linkbtn secondary" download="tr_pytr_export.csv">Download-Link öffnen</a>
+        <span class="hint">Falls direktes Speichern auf Android nichts macht, diesen Link antippen.</span>
+      </div>
+
+      <div id="status" class="status">Bereit.</div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+          <strong>Erkannte Datensätze</strong>
+          <span id="countPill" class="pill">0 Zeilen</span>
+        </div>
+        <div class="table-wrap">
+          <table id="previewTable">
+            <thead>
+              <tr>
+                <th>booking_date</th>
+                <th>type</th>
+                <th>isin</th>
+                <th>name</th>
+                <th>quantity</th>
+                <th>price</th>
+                <th>gross</th>
+                <th>notes</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+          <strong>CSV</strong>
+          <span class="pill">Semikolon</span>
+        </div>
+        <div id="csvOutput" class="code"></div>
+        <div class="small" style="margin-top: 10px;">
+          Hinweis: In PDF-Kontoauszügen fehlt meist ein echter Timestamp. Deshalb wird pro Tag eine stabile künstliche Uhrzeit erzeugt.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs" type="module"></script>
+  <script type="module">
+    import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs";
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.worker.min.mjs";
+
+    const els = {
+      pdfFile: document.getElementById("pdfFile"),
+      rawText: document.getElementById("rawText"),
+      rawSourceInput: document.getElementById("rawSourceInput"),
+      dateFrom: document.getElementById("dateFrom"),
+      dateTo: document.getElementById("dateTo"),
+      includeMoneyMarket: document.getElementById("includeMoneyMarket"),
+      includeCardAsRemoval: document.getElementById("includeCardAsRemoval"),
+      depositNameAsNote: document.getElementById("depositNameAsNote"),
+      status: document.getElementById("status"),
+      csvOutput: document.getElementById("csvOutput"),
+      countPill: document.getElementById("countPill"),
+      previewBody: document.querySelector("#previewTable tbody"),
+      readPdfBtn: document.getElementById("readPdfBtn"),
+      buildBtn: document.getElementById("buildBtn"),
+      copyBtn: document.getElementById("copyBtn"),
+      downloadBtn: document.getElementById("downloadBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      downloadBox: document.getElementById("downloadBox"),
+      downloadLink: document.getElementById("downloadLink")
+    };
+
+    let parsedRows = [];
+    let csvText = "";
+    let blobUrl = null;
+
+    const MONTHS = {
+      januar: "01", jan: "01", "jan.": "01",
+      februar: "02", feb: "02", "feb.": "02",
+      märz: "03", maerz: "03", mär: "03", "mär.": "03", mrz: "03", "mrz.": "03",
+      april: "04", apr: "04", "apr.": "04",
+      mai: "05",
+      juni: "06", jun: "06", "jun.": "06",
+      juli: "07", jul: "07", "jul.": "07",
+      august: "08", aug: "08", "aug.": "08",
+      september: "09", sep: "09", "sep.": "09", sept: "09", "sept.": "09",
+      oktober: "10", okt: "10", "okt.": "10",
+      november: "11", nov: "11", "nov.": "11",
+      dezember: "12", dez: "12", "dez.": "12"
+    };
+
+    const DATE_REGEX = /(\d{1,2})\s+(Januar|Jan\.?|Februar|Feb\.?|März|Maerz|Mär\.?|Mrz\.?|April|Apr\.?|Mai|Juni|Jun\.?|Juli|Jul\.?|August|Aug\.?|September|Sep\.?|Sept\.?|Oktober|Okt\.?|November|Nov\.?|Dezember|Dez\.?)\s+(\d{4})/gi;
+    const SINGLE_DATE_REGEX = /(\d{1,2})\s+(Januar|Jan\.?|Februar|Feb\.?|März|Maerz|Mär\.?|Mrz\.?|April|Apr\.?|Mai|Juni|Jun\.?|Juli|Jul\.?|August|Aug\.?|September|Sep\.?|Sept\.?|Oktober|Okt\.?|November|Nov\.?|Dezember|Dez\.?)(?:\s+)(\d{4})/i;
+    const ISIN_REGEX = /\b([A-Z]{2}[A-Z0-9]{10}|XF[0-9A-Z]{10})\b/i;
+
+    function setStatus(msg) {
+      els.status.textContent = msg;
+    }
+
+    function normalizeMonthName(monthName) {
+      return String(monthName || "")
+        .toLowerCase()
+        .replace(/\u00a0/g, " ")
+        .trim();
+    }
+
+    function toIsoDate(day, monthName, year) {
+      const dd = String(day).padStart(2, "0");
+      const mm = MONTHS[normalizeMonthName(monthName)];
+      return mm ? `${year}-${mm}-${dd}` : "";
+    }
+
+    function normalizeText(text) {
+      return String(text || "")
+        .replace(/\r/g, "\n")
+        .replace(/\u00a0/g, " ")
+        .replace(/[ \t]+/g, " ")
+        .replace(/(\d{1,2})\s*\n\s*([A-Za-zÄÖÜäöü.]+)\s*\n\s*(\d{4})/g, "$1 $2 $3")
+        .replace(/\n?DATUM TYP BESCHREIBUNG ZAHLUNGSEINGANG ZAHLUNGSAUSGANG SALDO\n?/gi, "\n")
+        .replace(/\n?DATUM ZAHLUNGSART GELDMARKTFONDS STÜCK KURS PRO STÜCK BETRAG\n?/gi, "\n")
+        .replace(/\n?TRADE REPUBLIC BANK GMBH.*?\n/gi, "\n")
+        .replace(/\n?Trade Republic Bank GmbH.*?\n/gi, "\n")
+        .replace(/\n?Erstellt am .*? Seite \d+ von \d+\n?/gi, "\n")
+        .replace(/\n?www\.traderepublic\.com.*?\n/gi, "\n")
+        .replace(/\n?AG Charlottenburg.*?\n/gi, "\n")
+        .replace(/\n?Umsatzsteuer-ID.*?\n/gi, "\n")
+        .replace(/\n?Geschäftsführer\n?/gi, "\n")
+        .replace(/\n?Andreas Torner\n?/gi, "\n")
+        .replace(/\n?Gernot Mittendorfer\n?/gi, "\n")
+        .replace(/\n?Christian Hecker\n?/gi, "\n")
+        .replace(/\n?Thomas Pischke\n?/gi, "\n")
+        .replace(/\n{2,}/g, "\n")
+        .replace(/\n +/g, "\n")
+        .replace(/ +\n/g, "\n")
+        .trim();
+    }
+
+    function parseGermanNumber(input) {
+      if (input == null) return null;
+      let s = String(input)
+        .replace(/\u00a0/g, " ")
+        .replace(/€/g, "")
+        .trim();
+
+      if (!s) return null;
+
+      s = s.replace(/\./g, "").replace(",", ".");
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function fmt(n, decimals = null) {
+      if (n == null || n === "") return "";
+      if (typeof n !== "number") return String(n);
+      return decimals == null ? String(n) : n.toFixed(decimals);
+    }
+
+    function csvEscape(v) {
+      const s = v == null ? "" : String(v);
+      if (/[;"\n]/.test(s)) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }
+
+    function extractSection(text, startMarker, endMarker) {
+      const start = text.indexOf(startMarker);
+      if (start < 0) return "";
+      const end = endMarker ? text.indexOf(endMarker, start) : -1;
+      return end >= 0 ? text.slice(start + startMarker.length, end) : text.slice(start + startMarker.length);
+    }
+
+    function splitEntriesByDate(sectionText) {
+      const s = normalizeText(sectionText);
+      const matches = [...s.matchAll(DATE_REGEX)];
+      const entries = [];
+
+      for (let i = 0; i < matches.length; i++) {
+        const start = matches[i].index;
+        const end = i + 1 < matches.length ? matches[i + 1].index : s.length;
+        entries.push(s.slice(start, end).trim());
+      }
+
+      return entries;
+    }
+
+    function extractEntryDate(entry) {
+      const exact = entry.match(SINGLE_DATE_REGEX);
+      if (!exact) return null;
+
+      return {
+        raw: exact[0],
+        day: exact[1],
+        month: exact[2],
+        year: exact[3],
+        isoDate: toIsoDate(exact[1], exact[2], exact[3])
+      };
+    }
+
+    function moneyMatches(entry) {
+      return [...String(entry).matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2})\s*€/g)]
+        .map(m => parseGermanNumber(m[1]))
+        .filter(v => v != null);
+    }
+
+    function firstTransactionAmount(entry) {
+      const amounts = moneyMatches(entry);
+      return amounts.length ? amounts[0] : null;
+    }
+
+    function makeTs(date, idxOnDate) {
+      const baseHour = 12;
+      const minute = Math.floor(idxOnDate / 60);
+      const second = idxOnDate % 60;
+      return `${date}T${String(baseHour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:${String(second).padStart(2, "0")}`;
+    }
+
+    function buildId(ts, type, isin, gross, quantity) {
+      return `${ts}|${type}|${isin || ""}|${gross ?? ""}|${quantity ?? ""}`;
+    }
+
+    function makeRow({
+      ts,
+      type,
+      isin = "",
+      symbol = "",
+      name = "",
+      quantity = "",
+      price = "",
+      currency = "EUR",
+      gross = "",
+      fees = "",
+      taxes = "",
+      net = "",
+      venue = "",
+      booking_date = "",
+      raw_source = "",
+      notes = ""
+    }) {
+      return {
+        id: buildId(ts, type, isin, gross, quantity),
+        ts,
+        type,
+        isin,
+        symbol,
+        name,
+        quantity,
+        price,
+        currency,
+        gross,
+        fees,
+        taxes,
+        net,
+        venue,
+        booking_date,
+        raw_source,
+        notes
+      };
+    }
+
+    function getRawSource() {
+      const v = els.rawSourceInput.value.trim();
+      return v || "pdf_tr";
+    }
+
+    function firstIsin(entry) {
+      const m = String(entry).match(ISIN_REGEX);
+      return m ? m[1] : "";
+    }
+
+    function cleanName(body, removeWords = []) {
+      let s = String(body);
+
+      for (const w of removeWords) {
+        const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        s = s.replace(new RegExp(`\\b${escaped}\\b`, "gi"), " ");
+      }
+
+      s = s.replace(ISIN_REGEX, " ");
+      s = s.replace(/\bquantity:\s*[\d.,]+\b/gi, " ");
+      s = s.replace(/\bN\d+\b/g, " ");
+      s = s.replace(/\bKW\b/g, " ");
+      s = s.replace(/\d{6,}/g, " ");
+      s = s.replace(/\d{1,3}(?:\.\d{3})*,\d{2}\s*€/g, " ");
+      s = s.replace(/\s+/g, " ").trim();
+
+      return s;
+    }
+
+    function parseDepositOrTransfer(entry, isoDate, idxOnDate) {
+      if (
+        !/\bÜberweisung\b/i.test(entry) &&
+        !/\bIncoming transfer\b/i.test(entry) &&
+        !/\bBonus\b/i.test(entry) &&
+        !/\bCash reward allocation\b/i.test(entry)
+      ) return null;
+
+      const amount = firstTransactionAmount(entry);
+      if (amount == null) return null;
+
+      let notes = "Einzahlung";
+
+      if (/\bBonus\b/i.test(entry) || /\bCash reward allocation\b/i.test(entry)) {
+        notes = "Bonus";
+      } else if (els.depositNameAsNote.checked) {
+        const m = entry.match(/Incoming transfer from\s+(.+?)(?:\s+\(|$)/i);
+        if (m) notes = m[1].trim();
+      }
+
+      return makeRow({
+        ts: makeTs(isoDate, idxOnDate),
+        type: "Deposit",
+        gross: amount,
+        net: amount,
+        booking_date: isoDate,
+        raw_source: getRawSource(),
+        notes
+      });
+    }
+
+    function parseInterest(entry, isoDate, idxOnDate) {
+      if (!/\bInterest payment\b/i.test(entry) && !/\bZinsen\b/i.test(entry)) return null;
+
+      const amount = firstTransactionAmount(entry);
+      if (amount == null) return null;
+
+      return makeRow({
+        ts: makeTs(isoDate, idxOnDate),
+        type: "Interest",
+        gross: amount,
+        net: amount,
+        booking_date: isoDate,
+        raw_source: getRawSource(),
+        notes: "Zinsen"
+      });
+    }
+
+    function parseDividend(entry, isoDate, idxOnDate) {
+      if (!/\bDividend\b/i.test(entry) && !/\bErtrag\b/i.test(entry)) return null;
+
+      const amount = firstTransactionAmount(entry);
+      if (amount == null) return null;
+
+      const isin = firstIsin(entry);
+      const name = cleanName(entry, [
+        "Cash", "Dividend", "for", "ISIN", "Ertrag", "Ereignisausführung"
+      ]);
+
+      return makeRow({
+        ts: makeTs(isoDate, idxOnDate),
+        type: "Dividend",
+        isin,
+        name,
+        gross: amount,
+        net: amount,
+        booking_date: isoDate,
+        raw_source: getRawSource(),
+        notes: "Ertrag"
+      });
+    }
+
+    function parseSecurityTrade(entry, isoDate, idxOnDate) {
+      let s = String(entry).replace(/\s+/g, " ").trim();
+
+      const isSavings = /\bSavings plan execution\b/i.test(s);
+      const isBuyTrade = /\bBuy trade\b/i.test(s);
+      const isSellTrade = /\bSell trade\b/i.test(s);
+
+      if (!isSavings && !isBuyTrade && !isSellTrade) return null;
+
+      s = s.replace(/^Handel\s+/i, "").trim();
+
+      const m = s.match(
+        /(?:Savings plan execution|Buy trade|Sell trade)\s+([A-Z0-9]{12})\s+(.+?),\s*quantity:\s*([\d.,]+)/i
+      );
+      if (!m) return null;
+
+      const isin = m[1].trim();
+      const name = m[2].replace(/\s+/g, " ").trim();
+      const quantity = parseGermanNumber(m[3]);
+
+      const amountAbs = firstTransactionAmount(s);
+      if (amountAbs == null) return null;
+
+      const type = isSellTrade ? "Sell" : "Buy";
+      const gross = isSellTrade ? Math.abs(amountAbs) : -Math.abs(amountAbs);
+      const price = (quantity && amountAbs != null) ? (amountAbs / quantity) : "";
+
+      return makeRow({
+        ts: makeTs(isoDate, idxOnDate),
+        type,
+        isin,
+        name,
+        quantity,
+        price,
+        gross,
+        net: gross,
+        booking_date: isoDate,
+        raw_source: getRawSource(),
+        notes: isSavings ? "Sparplanausführung" : name
+      });
+    }
+
+    function parseLegacyBuy(entry, isoDate, idxOnDate) {
+      if (!/\bHandel\b/i.test(entry)) return null;
+      if (!/\bDirektkauf\b/i.test(entry) && !/\bKauf\b/i.test(entry)) return null;
+
+      const isin = firstIsin(entry);
+      const amount = firstTransactionAmount(entry);
+
+      if (!isin || amount == null) return null;
+
+      const name = cleanName(entry, [
+        "Handel", "Ausführung", "Direktkauf", "Kauf", "Verkauf", "Ertrag"
+      ]);
+
+      return makeRow({
+        ts: makeTs(isoDate, idxOnDate),
+        type: "Buy",
+        isin,
+        name,
+        quantity: "",
+        price: "",
+        gross: -Math.abs(amount),
+        net: -Math.abs(amount),
+        booking_date: isoDate,
+        raw_source: getRawSource(),
+        notes: "Direktkauf"
+      });
+    }
+
+    function parseCard(entry, isoDate, idxOnDate) {
+      if (!/\bKartentransaktion\b/i.test(entry)) return null;
+      if (!els.includeCardAsRemoval.checked) return null;
+
+      const s = String(entry).replace(/\s+/g, " ").trim();
+      const amount = firstTransactionAmount(s);
+      if (amount == null) return null;
+
+      const gross = -Math.abs(amount);
+
+      const cleaned = s
+        .replace(/^Kartentransaktion\s*/i, "")
+        .replace(/\s+\d{1,3}(?:\.\d{3})*,\d{2}\s*€.*$/i, "")
+        .trim();
+
+      return makeRow({
+        ts: makeTs(isoDate, idxOnDate),
+        type: "Removal",
+        gross,
+        net: gross,
+        booking_date: isoDate,
+        raw_source: getRawSource(),
+        notes: cleaned || "Kartenzahlung"
+      });
+    }
+
+    function parseMainSection(text) {
+      const section = extractSection(text, "UMSATZÜBERSICHT", "BARMITTELÜBERSICHT");
+      if (!section) throw new Error("UMSATZÜBERSICHT nicht gefunden.");
+
+      const entries = splitEntriesByDate(section);
+      const out = [];
+      const perDateCounter = {};
+
+      for (const entry of entries) {
+        const dateInfo = extractEntryDate(entry);
+        if (!dateInfo || !dateInfo.isoDate) continue;
+
+        const isoDate = dateInfo.isoDate;
+        const body = entry.slice(entry.indexOf(dateInfo.raw) + dateInfo.raw.length).trim();
+
+        perDateCounter[isoDate] = (perDateCounter[isoDate] || 0) + 1;
+        const idxOnDate = perDateCounter[isoDate];
+
+        const row =
+          parseDepositOrTransfer(body, isoDate, idxOnDate) ||
+          parseInterest(body, isoDate, idxOnDate) ||
+          parseDividend(body, isoDate, idxOnDate) ||
+          parseSecurityTrade(body, isoDate, idxOnDate) ||
+          parseLegacyBuy(body, isoDate, idxOnDate) ||
+          parseCard(body, isoDate, idxOnDate);
+
+        if (row) out.push(row);
+      }
+
+      return out;
+    }
+
+    function parseMoneyMarket(entry, isoDate, idxOnDate) {
+      const m = entry.match(/\b(Kauf|Verkauf)\b\s+(.+?)\s+([A-Z0-9]{12})\s+([\d.,]+)\s+([\d.,]+)\s*€\s+([\d.,]+)\s*€/i);
+      if (!m) return null;
+
+      const dir = m[1].toLowerCase();
+      const name = m[2].replace(/\s+/g, " ").trim();
+      const isin = m[3].trim();
+      const quantity = parseGermanNumber(m[4]);
+      const price = parseGermanNumber(m[5]);
+      const amount = parseGermanNumber(m[6]);
+
+      const type = dir === "verkauf" ? "Sell" : "Buy";
+      const gross = dir === "verkauf" ? Math.abs(amount) : -Math.abs(amount);
+
+      return makeRow({
+        ts: makeTs(isoDate, idxOnDate),
+        type,
+        isin,
+        name,
+        quantity,
+        price,
+        gross,
+        net: gross,
+        booking_date: isoDate,
+        raw_source: getRawSource(),
+        notes: "Deutsche Managed Euro Fund"
+      });
+    }
+
+    function parseMoneyMarketSection(text) {
+      if (!els.includeMoneyMarket.checked) return [];
+
+      const section = extractSection(text, "TRANSAKTIONSÜBERSICHT", "HINWEISE ZUM KONTOAUSZUG");
+      if (!section) return [];
+
+      const entries = splitEntriesByDate(section);
+      const out = [];
+      const perDateCounter = {};
+
+      for (const entry of entries) {
+        const dateInfo = extractEntryDate(entry);
+        if (!dateInfo || !dateInfo.isoDate) continue;
+
+        const isoDate = dateInfo.isoDate;
+        const body = entry.slice(entry.indexOf(dateInfo.raw) + dateInfo.raw.length).trim();
+
+        perDateCounter[isoDate] = (perDateCounter[isoDate] || 50) + 1;
+        const idxOnDate = perDateCounter[isoDate];
+
+        const row = parseMoneyMarket(body, isoDate, idxOnDate);
+        if (row) out.push(row);
+      }
+
+      return out;
+    }
+
+    function applyDateFilter(rows) {
+      const from = els.dateFrom.value || "";
+      const to = els.dateTo.value || "";
+
+      return rows.filter(row => {
+        const d = row.booking_date || "";
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+      });
+    }
+
+    function renderTable(rows) {
+      els.previewBody.innerHTML = "";
+      els.countPill.textContent = `${rows.length} Zeilen`;
+
+      for (const r of rows) {
+        const tr = document.createElement("tr");
+        const cols = [
+          r.booking_date,
+          r.type,
+          r.isin,
+          r.name,
+          fmt(r.quantity),
+          fmt(r.price, typeof r.price === "number" ? 6 : null),
+          fmt(r.gross, typeof r.gross === "number" ? 2 : null),
+          r.notes
+        ];
+
+        for (const c of cols) {
+          const td = document.createElement("td");
+          td.textContent = c == null ? "" : String(c);
+          tr.appendChild(td);
+        }
+
+        els.previewBody.appendChild(tr);
+      }
+    }
+
+    function buildCsv(rows) {
+      const header = [
+        "id","ts","type","isin","symbol","name","quantity","price","currency",
+        "gross","fees","taxes","net","venue","booking_date","raw_source","notes"
+      ];
+
+      const lines = [header.join(";")];
+
+      for (const r of rows) {
+        const values = [
+          r.id,
+          r.ts,
+          r.type,
+          r.isin || "",
+          r.symbol || "",
+          r.name || "",
+          fmt(r.quantity),
+          fmt(r.price),
+          r.currency || "EUR",
+          fmt(r.gross, typeof r.gross === "number" ? 2 : null),
+          fmt(r.fees, typeof r.fees === "number" ? 2 : null),
+          fmt(r.taxes, typeof r.taxes === "number" ? 2 : null),
+          fmt(r.net, typeof r.net === "number" ? 2 : null),
+          r.venue || "",
+          r.booking_date || "",
+          r.raw_source || "",
+          r.notes || ""
+        ];
+
+        lines.push(values.map(csvEscape).join(";"));
+      }
+
+      return lines.join("\n");
+    }
+
+    function updateDownloadLink(content) {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+      blobUrl = URL.createObjectURL(blob);
+      els.downloadLink.href = blobUrl;
+      els.downloadLink.download = "tr_pytr_export.csv";
+      els.downloadBox.style.display = "flex";
+    }
+
+    async function readPdfAsText(file) {
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+
+      let full = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const items = content.items.map(x => x.str);
+        full += items.join("\n") + "\n\n";
+      }
+
+      return normalizeText(full);
+    }
+
+    async function handleReadPdf() {
+      const file = els.pdfFile.files?.[0];
+      if (!file) {
+        setStatus("Bitte zuerst eine PDF auswählen.");
+        return;
+      }
+
+      try {
+        setStatus("PDF wird gelesen ...");
+        const text = await readPdfAsText(file);
+        els.rawText.value = text;
+        setStatus("PDF gelesen. Jetzt CSV erzeugen.");
+      } catch (e) {
+        console.error(e);
+        setStatus("Fehler beim PDF-Lesen: " + e.message);
+      }
+    }
+
+    function handleBuild() {
+      const text = normalizeText(els.rawText.value);
+      if (!text) {
+        setStatus("Kein Text vorhanden.");
+        return;
+      }
+
+      try {
+        const mainRows = parseMainSection(text);
+        const moneyRows = parseMoneyMarketSection(text);
+        let rows = [...mainRows, ...moneyRows].sort((a, b) => a.ts.localeCompare(b.ts));
+        rows = applyDateFilter(rows);
+
+        parsedRows = rows;
+        csvText = buildCsv(parsedRows);
+
+        renderTable(parsedRows);
+        els.csvOutput.textContent = csvText;
+        updateDownloadLink(csvText);
+
+        setStatus(
+          `Fertig. ${parsedRows.length} Zeilen erzeugt.\n` +
+          `raw_source = ${getRawSource()}\n` +
+          `${els.dateFrom.value ? "von: " + els.dateFrom.value + "\n" : ""}` +
+          `${els.dateTo.value ? "bis: " + els.dateTo.value + "\n" : ""}`
+        );
+      } catch (e) {
+        console.error(e);
+        parsedRows = [];
+        csvText = "";
+        renderTable(parsedRows);
+        els.csvOutput.textContent = "";
+        els.downloadBox.style.display = "none";
+        setStatus("Fehler beim Parsen: " + e.message);
+      }
+    }
+
+    async function handleCopy() {
+      if (!csvText) handleBuild();
+      if (!csvText) return;
+
+      try {
+        await navigator.clipboard.writeText(csvText);
+        setStatus("CSV kopiert.");
+      } catch (e) {
+        setStatus("Kopieren nicht erlaubt. Dann bitte den CSV-Block manuell kopieren.");
+      }
+    }
+
+    function handleDownload() {
+      if (!csvText) handleBuild();
+      if (!csvText) return;
+
+      updateDownloadLink(csvText);
+
+      try {
+        const a = document.createElement("a");
+        a.href = els.downloadLink.href;
+        a.download = "tr_pytr_export.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setStatus("Download ausgelöst. Falls nichts passiert: den sichtbaren Download-Link antippen.");
+      } catch (e) {
+        setStatus("Direkter Download ging nicht. Bitte den sichtbaren Download-Link antippen.");
+      }
+    }
+
+    function handleClear() {
+      parsedRows = [];
+      csvText = "";
+      els.pdfFile.value = "";
+      els.rawText.value = "";
+      els.csvOutput.textContent = "";
+      els.previewBody.innerHTML = "";
+      els.countPill.textContent = "0 Zeilen";
+      els.downloadBox.style.display = "none";
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+        blobUrl = null;
+      }
+      setStatus("Zurückgesetzt.");
+    }
+
+    els.readPdfBtn.addEventListener("click", handleReadPdf);
+    els.buildBtn.addEventListener("click", handleBuild);
+    els.copyBtn.addEventListener("click", handleCopy);
+    els.downloadBtn.addEventListener("click", handleDownload);
+    els.clearBtn.addEventListener("click", handleClear);
+  </script>
+</body>
+</html>
