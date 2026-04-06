@@ -29,13 +29,23 @@
 
   function isAuthorized() {
     try {
-      return sessionStorage.getItem(AUTH_KEY) === "1";
+      return localStorage.getItem(AUTH_KEY) === "1" || sessionStorage.getItem(AUTH_KEY) === "1";
     } catch {
-      return false;
+      try {
+        return sessionStorage.getItem(AUTH_KEY) === "1";
+      } catch {
+        return false;
+      }
     }
   }
 
   function setAuthorized() {
+    try {
+      localStorage.setItem(AUTH_KEY, "1");
+    } catch {
+      // Ignore storage errors and continue with session storage fallback.
+    }
+
     try {
       sessionStorage.setItem(AUTH_KEY, "1");
     } catch {
